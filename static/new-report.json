@@ -1,0 +1,290 @@
+{
+    "leftMargin": 0, 
+    "paperOrientation": 0, 
+    "formKey": "TestPrint", 
+    "standaloneNode": true, 
+    "caption": "测试打印", 
+    "pageID": "A4", 
+    "tagName": "Report", 
+    "pageHeight": 842, 
+    "pageWidth": 595, 
+    "default": true, 
+    "pageOrientation": 0, 
+    "topMargin": 0, 
+    "rightMargin": 0, 
+    "bottomMargin": 0, 
+    "grid": {
+        "elementArray": [],
+        "autoGen": false, 
+        "standaloneNode": true, 
+        "tagName": "Grid", 
+        "empty": true
+    }, 
+    "paperWidth": 595, 
+    "autoGen": false,
+    "virtualPage": false, 
+    "dataSource": {
+        "elementMap": {
+            "TestPrintHead": {
+                "elementMap": {
+                    "Status": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "单据状态", 
+                        "description": "", 
+                        "dBFieldKey": "", 
+                        "tagName": "Field", 
+                        "key": "Status"
+                    }, 
+                    "NO": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "单据编号", 
+                        "description": "", 
+                        "dBFieldKey": "", 
+                        "tagName": "Field", 
+                        "key": "NO"
+                    }, 
+                    "ModifyTime": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "修改时间", 
+                        "description": "", 
+                        "dBFieldKey": "", 
+                        "tagName": "Field", 
+                        "key": "ModifyTime"
+                    }, 
+                    "VERID": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "对象版本", 
+                        "description": "", 
+                        "dBFieldKey": "", 
+                        "tagName": "Field", 
+                        "key": "VERID"
+                    }, 
+                    "InstanceID": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "流程实例", 
+                        "description": "", 
+                        "dBFieldKey": "", 
+                        "tagName": "Field", 
+                        "key": "InstanceID"
+                    }, 
+                    "CreateTime": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "制单日期", 
+                        "description": "", 
+                        "dBFieldKey": "", 
+                        "tagName": "Field", 
+                        "key": "CreateTime"
+                    }, 
+                    "Num": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "数值", 
+                        "description": "", 
+                        "dBFieldKey": "", 
+                        "tagName": "Field", 
+                        "key": "Num"
+                    }, 
+                    "OID": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "对象标识", 
+                        "description": "", 
+                        "dBFieldKey": "", 
+                        "tagName": "Field", 
+                        "key": "OID"
+                    }, 
+                    "Creator": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "制单人", 
+                        "description": "保存人员", 
+                        "dBFieldKey": "", 
+                        "tagName": "Field", 
+                        "key": "Creator"
+                    }, 
+                    "BillDate": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "单据日期", 
+                        "description": "", 
+                        "dBFieldKey": "", 
+                        "tagName": "Field", 
+                        "key": "BillDate"
+                    }, 
+                    "SOID": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "主对象标识", 
+                        "description": "", 
+                        "dBFieldKey": "", 
+                        "tagName": "Field", 
+                        "key": "SOID"
+                    }, 
+                    "DVERID": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "对象明细版本", 
+                        "description": "", 
+                        "dBFieldKey": "", 
+                        "tagName": "Field", 
+                        "key": "DVERID"
+                    }, 
+                    "Modifier": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "修改人", 
+                        "description": "", 
+                        "dBFieldKey": "", 
+                        "tagName": "Field", 
+                        "key": "Modifier"
+                    }, 
+                    "POID": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "父对象标识", 
+                        "description": "", 
+                        "dBFieldKey": "", 
+                        "tagName": "Field", 
+                        "key": "POID"
+                    }
+                }, 
+                "sourceType": 0, 
+                "autoGen": false, 
+                "standaloneNode": true, 
+                "caption": "头表1", 
+                "tagName": "Table", 
+                "key": "TestPrintHead"
+            }, 
+            "TestPrintDetail": {
+                "elementMap": {
+                    "TestDict": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "TestDict", 
+                        "description": "", 
+                        "dBFieldKey": "", 
+                        "tagName": "Field", 
+                        "key": "TestDict"
+                    }, 
+                    "SOID": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "主对象标识", 
+                        "description": "", 
+                        "dBFieldKey": "SOID", 
+                        "tagName": "Field", 
+                        "key": "SOID"
+                    }, 
+                    "VERID": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "对象版本", 
+                        "description": "", 
+                        "dBFieldKey": "VERID", 
+                        "tagName": "Field", 
+                        "key": "VERID"
+                    }, 
+                    "UseType": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "用途", 
+                        "description": "", 
+                        "dBFieldKey": "", 
+                        "tagName": "Field", 
+                        "key": "UseType"
+                    }, 
+                    "TestDate": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "TestDate", 
+                        "description": "", 
+                        "dBFieldKey": "", 
+                        "tagName": "Field", 
+                        "key": "TestDate"
+                    }, 
+                    "OID": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "对象标识", 
+                        "description": "", 
+                        "dBFieldKey": "OID", 
+                        "tagName": "Field", 
+                        "key": "OID"
+                    }, 
+                    "Sequence": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "序号", 
+                        "description": "", 
+                        "dBFieldKey": "SEQUENCE", 
+                        "tagName": "Field", 
+                        "key": "Sequence"
+                    }, 
+                    "TestNumber": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "TestNumber", 
+                        "description": "", 
+                        "dBFieldKey": "", 
+                        "tagName": "Field", 
+                        "key": "TestNumber"
+                    }, 
+                    "DVERID": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "对象明细版本", 
+                        "description": "", 
+                        "dBFieldKey": "DVERID", 
+                        "tagName": "Field", 
+                        "key": "DVERID"
+                    }, 
+                    "TestEditor": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "TestEditor", 
+                        "description": "", 
+                        "dBFieldKey": "", 
+                        "tagName": "Field", 
+                        "key": "TestEditor"
+                    }, 
+                    "POID": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "父对象标识", 
+                        "description": "", 
+                        "dBFieldKey": "POID", 
+                        "tagName": "Field", 
+                        "key": "POID"
+                    }, 
+                    "TestComboBox": {
+                        "autoGen": false, 
+                        "standaloneNode": true, 
+                        "caption": "TestComboBox", 
+                        "description": "", 
+                        "dBFieldKey": "", 
+                        "tagName": "Field", 
+                        "key": "TestComboBox"
+                    }
+                }, 
+                "sourceType": 0, 
+                "autoGen": false, 
+                "standaloneNode": true, 
+                "caption": "明细表", 
+                "tagName": "Table", 
+                "key": "TestPrintDetail"
+            }
+        }, 
+        "autoGen": false, 
+        "standaloneNode": true, 
+        "tagName": "DataSource"
+    }, 
+    "key": "TestPrintPrint", 
+    "paperHeight": 842, 
+    "paperID": "A4"
+}

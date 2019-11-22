@@ -43,7 +43,7 @@
                 <div class="r">
                     <button class="btn" title="页面属性" @click="_showDialog(1)">页面属性</button>
                     <button class="btn" title="报表属性" @click="_showDialog(2)">报表属性</button>
-                    <button class="btn" style="background:#00ffff;color:#00a1ff;" title="查看最新数据"
+                    <button class="btn" style="background:#00ffff;color:#00a1ff;" title="查看最新数据" v-show="false"
                             @click="_showNewReportData">查看最新数据
                     </button>
                 </div>
@@ -1073,6 +1073,7 @@
 <script src="../static/js/3rd/jexcel-master/dist/jexcel.js"></script>
 <script src="../static/js/3rd/jsuites-master/dist/jsuites.js"></script>
 <script src="../static/js/3rd/colorpicker-1.9.62/dist/colorpicker.js"></script>
+<script src="../static/js/constants.js"></script>
 <script type="text/javascript">
     (function () {
 
@@ -1095,7 +1096,7 @@
             'Legal': ["8.4×14 INCH", 605, 1008]
         };
 
-        new Vue({
+        printInstance = new Vue({
             el: '#report-tpl',
             data() {
                 return {
@@ -1118,49 +1119,43 @@
 
             methods: {
                 //获取报表数据
-                _getReportData() {
-                    let _this = this;
-                    $.get("/static/report.json", function (result) {
-                        _this._initReportData(result);
-                    });
-                    $.get("/static/dic.json", function (result) {
-                        _this.dicData = result[0];
-                    });
+                exportReportData() {
+                    this._revertPadding();
+                    return this.reportData;
                 },
                 //初始化报表数据
-                _initReportData(reportData) {
+                initReportData(reportData) {
                     let _this = this;
-                    $.get("/static/pubAllClass.json", function (result) {
-                        _this.pubAllClass = result;
-                        reportData.grid.elementArray.forEach(function (grid, index1) {
-                            grid.rows.elementArray.forEach(function (row, index2) {
-                                row.elementArray.forEach(function (cell, index3) {
-                                    //为了方便数据绑定，对单元格padding进行特殊处理:如果单元格的padding:'' -->[0,0,0,0];如果单元格padding:'1,2,3,4'-->[1,2,3,4]
-                                    cell.padding = cell.padding == '' ? [0,0,0,0] : cell.padding.split(',');
+                    _this.pubAllClass = pubAllClass;
+                    reportData.grid.elementArray.forEach(function (grid, index1) {
+                        grid.rows.elementArray.forEach(function (row, index2) {
+                            row.elementArray.forEach(function (cell, index3) {
+                                //为了方便数据绑定，对单元格padding进行特殊处理:如果单元格的padding:'' -->[0,0,0,0];如果单元格padding:'1,2,3,4'-->[1,2,3,4]
+                                cell.padding = cell.padding == '' ? [0,0,0,0] : cell.padding.split(',');
 
-                                    cell.display = cell.display || JSON.parse(JSON.stringify(_this.pubAllClass.Display));
-                                    cell.display.border = cell.display.border || JSON.parse(JSON.stringify(_this.pubAllClass.Border));
-                                    cell.display.font = cell.display.font || JSON.parse(JSON.stringify(_this.pubAllClass.Font));
-                                    cell.display.imageStyle = cell.display.imageStyle || JSON.parse(JSON.stringify(_this.pubAllClass.ImageStyle));
-                                    cell.display.format = cell.display.format || JSON.parse(JSON.stringify(_this.pubAllClass.Format));
-                                    cell.display.format.listItems = cell.display.format.listItems || [];
-                                    cell.textNode = cell.textNode || JSON.parse(JSON.stringify(_this.pubAllClass.CellText));
+                                cell.display = cell.display || JSON.parse(JSON.stringify(_this.pubAllClass.Display));
+                                cell.display.border = cell.display.border || JSON.parse(JSON.stringify(_this.pubAllClass.Border));
+                                cell.display.font = cell.display.font || JSON.parse(JSON.stringify(_this.pubAllClass.Font));
+                                cell.display.imageStyle = cell.display.imageStyle || JSON.parse(JSON.stringify(_this.pubAllClass.ImageStyle));
+                                cell.display.format = cell.display.format || JSON.parse(JSON.stringify(_this.pubAllClass.Format));
+                                cell.display.format.listItems = cell.display.format.listItems || [];
+                                cell.textNode = cell.textNode || JSON.parse(JSON.stringify(_this.pubAllClass.CellText));
 
-                                    //解决json数据中有的单元格有text属性，但是却没有textNode属性时，textNode.content为空的问题；
-                                    cell.textNode.content = cell.textNode.content || cell.text;
-                                });
+                                //解决json数据中有的单元格有text属性，但是却没有textNode属性时，textNode.content为空的问题；
+                                cell.textNode.content = cell.textNode.content || cell.text;
                             });
                         });
-                        _this.reportData = reportData;
-                        _this.paperSizeCustom = _this.reportData.paperID == 'Custom';
-                        _this._initJExcel();
                     });
+                    _this.reportData = reportData;
+                    _this.paperSizeCustom = _this.reportData.paperID == 'Custom';
+                    _this._initJExcel();
+                    _this.dicData = dicData;
                 },
                 _showDialog(index) {
                     this.dialog.dialogIndex = index;
                     this.dialog.dialogShow = true;
                 },
-                _showNewReportData(){
+                _revertPadding(){
                     //还原单元格的padding值
                     this.reportData.grid.elementArray.forEach(function (grid) {
                         grid.rows.elementArray.forEach(function (row) {
@@ -1175,6 +1170,9 @@
                             })
                         })
                     });
+                },
+                _showNewReportData(){
+                    this._revertPadding();
                     console.log('最新数据：');
                     console.log(this.reportData);
                     this._showDialog(3);
@@ -2100,7 +2098,7 @@
                 }
             },
             mounted() {
-                this._getReportData();
+                // this._getReportData();--->改由外部调用方法进行初始化。
             }
         })
 
