@@ -1,0 +1,519 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Report BottomMargin="15" Caption="测试打印" FormKey="TestPrint" Key="TestPrintPrint" LeftMargin="25" PageHeight="842" PageID="A4" PageWidth="595" PaperHeight="297" PaperID="A4" PaperWidth="210" RightMargin="25" TopMargin="15">
+    <DataSource>
+        <Table Key="TestPrintHead" Caption="头表1" SourceType="DataObject">
+            <Field Caption="对象标识" Key="OID"/>
+            <Field Caption="主对象标识" Key="SOID"/>
+            <Field Caption="父对象标识" Key="POID"/>
+            <Field Caption="对象版本" Key="VERID"/>
+            <Field Caption="对象明细版本" Key="DVERID"/>
+            <Field Caption="单据编号" Key="NO"/>
+            <Field Caption="单据状态" Key="Status"/>
+            <Field Caption="单据日期" Key="BillDate"/>
+            <Field Caption="制单人" Description="保存人员" Key="Creator"/>
+            <Field Caption="制单日期" Key="CreateTime"/>
+            <Field Caption="修改人" Key="Modifier"/>
+            <Field Caption="修改时间" Key="ModifyTime"/>
+            <Field Caption="流程实例" Key="InstanceID"/>
+            <Field Caption="数值" Key="Num"/>
+        </Table>
+        <Table Key="TestPrintDetail" Caption="明细表" SourceType="DataObject" DBTableKey="TestPrintDetail">
+            <Field Caption="对象标识" DBFieldKey="OID" Key="OID"/>
+            <Field Caption="父对象标识" DBFieldKey="POID" Key="POID"/>
+            <Field Caption="主对象标识" DBFieldKey="SOID" Key="SOID"/>
+            <Field Caption="对象版本" DBFieldKey="VERID" Key="VERID"/>
+            <Field Caption="对象明细版本" DBFieldKey="DVERID" Key="DVERID"/>
+            <Field Caption="序号" DBFieldKey="SEQUENCE" Key="Sequence"/>
+            <Field Caption="TestEditor" Key="TestEditor"/>
+            <Field Caption="TestNumber" Key="TestNumber"/>
+            <Field Caption="TestDict" Key="TestDict"/>
+            <Field Caption="TestDate" Key="TestDate"/>
+            <Field Caption="TestComboBox" Key="TestComboBox"/>
+            <Field Caption="用途" Key="UseType"/>
+        </Table>
+    </DataSource>
+    <Grid>
+        <Section Type="PageHead" Key="TestPrint">
+            <Columns>
+                <Column Width="460"/>
+                <Column Width="80"/>
+            </Columns>
+            <Rows>
+                <Row Height="50">
+                    <Cell IsMerged="true" IsMergedHead="true" MergedColumnSpan="1" MergedRowSpan="1">
+                        <Display BackColor="#ff6666" ForeColor="#4d3399">
+                            <Font Bold="true" Name="SimSun" Size="14" Italic="true"/>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                        <CellText>
+                            <![CDATA[测试打印]]>
+                        </CellText>
+                    </Cell>
+                    <Cell Caption="总页数" Key="TotalPage" PageNo="PageOfCount" SourceType="PageNo">
+                        <CellText>
+                            <![CDATA[总页数]]>
+                        </CellText>
+                    </Cell>
+                </Row>
+            </Rows>
+        </Section>
+        <Section Type="Paragraph">
+            <Columns>
+                <Column Width="80"/>
+                <Column Width="80"/>
+                <Column Width="80"/>
+                <Column Width="80"/>
+                <Column Width="80"/>
+            </Columns>
+            <Rows>
+                <Row Height="30">
+                    <Cell/>
+                    <Cell/>
+                    <Cell/>
+                    <Cell/>
+                    <Cell/>
+                </Row>
+                <Row Height="30">
+                    <Cell/>
+                    <Cell/>
+                    <Cell/>
+                    <Cell/>
+                    <Cell/>
+                </Row>
+                <Row Height="30">
+                    <Cell/>
+                    <Cell/>
+                    <Cell/>
+                    <Cell/>
+                    <Cell/>
+                </Row>
+            </Rows>
+        </Section>
+        <Section Type="Paragraph" Key="first_head">
+            <Columns>
+                <Column Width="90"/>
+                <Column Width="90"/>
+                <Column Width="80"/>
+                <Column Width="90"/>
+                <Column Width="90"/>
+                <Column Width="80"/>
+                <Column Width="90"/>
+            </Columns>
+            <Rows>
+                <Row Height="30">
+                    <Cell Caption="单据编号" Key="Lab_NO" MergedColumnSpan="1" MergedRowSpan="1">
+                        <Display>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="3" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell Caption="单据编号" FieldKey="NO" Key="NO" SourceType="Field" TableKey="TestPrintHead" Overflow="3" Padding="1,2,3,4" IsMerged="true" IsMergedHead="true" MergedColumnSpan="2" MergedRowSpan="1">
+                        <Display BackColor="#1a0068" ForeColor="#b31a1a">
+                            <Font Bold="true" Name="Times New Roman" Size="16" Italic="true" UnderLine="SolidNormal"/>
+                            <Border BottomColor="#000000" BottomStyle="3" RightColor="#000000" RightStyle="3" TopColor="#000000" TopStyle="3" LeftColor="#000000" LeftStyle="3"/>
+                            <ImageStyle/>
+                        </Display>
+                    </Cell>
+                    <Cell IsMerged="true" MergedColumnSpan="1">
+                        <Display EncodingType="" ErrorCorrectionLevel="" BackColor="#1a0068" ForeColor="#b31a1a">
+                            <Border BottomColor="#000000" BottomStyle="3" RightColor="#000000" RightStyle="3" TopColor="#000000" TopStyle="3" LeftColor="#000000" LeftStyle="3"/>
+                        </Display>
+                    </Cell>
+                    <Cell Caption="单据日期" Key="Lab_BillDate" MergedColumnSpan="1" MergedRowSpan="1">
+                        <Display>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="3"/>
+                        </Display>
+                    </Cell>
+                    <Cell Caption="单据日期" FieldKey="BillDate" Key="BillDate" MergedColumnSpan="1" MergedRowSpan="1" SourceType="Field" TableKey="TestPrintHead">
+                        <Display>
+                            <Font Bold="true" Name="Times New Roman" Size="12" Italic="true"/>
+                            <Format DataType="Date" FormatString="yyyy-MM-dd HH:mm:ss"/>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell Caption="单据状态" Key="Lab_Status" IsMerged="true" IsMergedHead="true" MergedColumnSpan="1" MergedRowSpan="2">
+                        <Display>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell Caption="单据状态" FieldKey="Status" Key="Status" MergedColumnSpan="1" MergedRowSpan="1" SourceType="Field" TableKey="TestPrintHead">
+                        <Display>
+                            <Format DataType="List">
+                                <ListItem Text="1" Value="1"/>
+                                <ListItem Text="2" Value="2"/>
+                                <ListItem Text="3" Value="3"/>
+                            </Format>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                </Row>
+                <Row Height="30">
+                    <Cell Caption="数值" Key="Lab_Num" MergedColumnSpan="1" MergedRowSpan="1">
+                        <Display BackColor="#b31a1a" ForeColor="#1a3399">
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                        <CellText>
+                            <![CDATA[数值]]>
+                        </CellText>
+                    </Cell>
+                    <Cell Caption="数值" FieldKey="Num" Key="Num" SourceType="Field" TableKey="TestPrintHead" IsMerged="true" IsMergedHead="true" MergedColumnSpan="2" MergedRowSpan="1">
+                        <Display BackColor="#b31a1a" ForeColor="#1a3399">
+                            <Format DataType="Number" FormatString="##,###.00"/>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="3" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                        <CellText>
+                            <![CDATA[数值]]>
+                        </CellText>
+                    </Cell>
+                    <Cell IsMerged="true" MergedColumnSpan="1">
+                        <Display EncodingType="" ErrorCorrectionLevel="">
+                            <Border TopColor="#000000" TopStyle="3"/>
+                        </Display>
+                    </Cell>
+                    <Cell>
+                        <Display>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell>
+                        <Display>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell IsMerged="true" MergedRowSpan="1">
+                        <Display>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell>
+                        <Display>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                </Row>
+                <Row Height="30">
+                    <Cell>
+                        <Display>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell>
+                        <Display>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell/>
+                    <Cell>
+                        <Display>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell>
+                        <Display>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell>
+                        <Display>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell>
+                        <Display>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                </Row>
+            </Rows>
+        </Section>
+        <Section Type="Table" Key="Grid1">
+            <Columns>
+                <Column Width="66"/>
+                <Column Width="77" ExpandKey="UseType" Type="Expand"/>
+                <Column Width="80"/>
+                <Column Width="78"/>
+                <Column Width="81"/>
+                <Column Width="80"/>
+            </Columns>
+            <Rows>
+                <Row Height="31" Type="DetailHead">
+                    <Cell Caption="测试文本" IsMerged="true" IsMergedHead="true" MergedColumnSpan="1" MergedRowSpan="2">
+                        <Display>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell Caption="测试数值" ColumnExpand="true" IsMerged="true" IsMergedHead="true" Key="UseTypeTitle" MergedColumnSpan="1" MergedRowSpan="1">
+                        <ColumnExpand ExpandType="Title">
+                            <![CDATA[]]>
+                        </ColumnExpand>
+                        <Display BackColor="#669999" ForeColor="#cc3333">
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell Caption="汇总" IsMerged="true" IsMergedHead="true" MergedColumnSpan="1" MergedRowSpan="2">
+                        <Display EncodingType="" ErrorCorrectionLevel="">
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                        <CellText>
+                            <![CDATA[汇总]]>
+                        </CellText>
+                    </Cell>
+                    <Cell Caption="测试字典" IsMerged="true" IsMergedHead="true" MergedColumnSpan="1" MergedRowSpan="2">
+                        <Display>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell Caption="测试日期" IsMerged="true" IsMergedHead="true" MergedColumnSpan="1" MergedRowSpan="2">
+                        <Display>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell Caption="测试下拉框" IsMerged="true" IsMergedHead="true" MergedColumnSpan="1" MergedRowSpan="2">
+                        <Display>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                </Row>
+                <Row Height="30" Type="DetailHead">
+                    <Cell IsMerged="true" MergedRowSpan="1"/>
+                    <Cell Caption="用途" ColumnExpand="true" Key="UseType">
+                        <ColumnExpand ColumnKey="UseType" ExpandType="Data" SourceType="Custom">
+                            <![CDATA["1,租赁;2,转租;3,自备;"]]>
+                        </ColumnExpand>
+                        <Display>
+                            <Format DataType="List">
+                                <ListItem Text="租赁" Value="1"/>
+                                <ListItem Text="转租" Value="2"/>
+                                <ListItem Text="自备" Value="3"/>
+                            </Format>
+                            <Border RightColor="#000000" RightStyle="1"/>
+                        </Display>
+                        <CellText>
+                            <![CDATA[用途]]>
+                        </CellText>
+                    </Cell>
+                    <Cell IsMerged="true" MergedRowSpan="1">
+                        <Display EncodingType="" ErrorCorrectionLevel="">
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell IsMerged="true" MergedRowSpan="1">
+                        <Display EncodingType="" ErrorCorrectionLevel="">
+                            <Border LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell IsMerged="true" MergedRowSpan="1"/>
+                    <Cell IsMerged="true" MergedRowSpan="1"/>
+                </Row>
+                <Row Height="30" BackColor="0xe64d4dff" TableKey="TestPrintDetail" Type="Detail">
+                    <Cell Caption="测试文本" FieldKey="TestEditor" Key="TestEditor" Overflow="1" Padding="1,1,2,2" SourceType="Field" TableKey="TestPrintDetail">
+                        <Display HAlign="Left">
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                            <ImageStyle/>
+                        </Display>
+                    </Cell>
+                    <Cell Caption="测试数值" FieldKey="TestNumber" Key="TestNumber" SourceType="Field" TableKey="TestPrintDetail">
+                        <Display BackColor="#669999" ForeColor="#cc3333">
+                            <Font Bold="true" Name="Times New Roman" Size="12" Italic="true" UnderLine="SolidNormal"/>
+                            <Format DataType="Number" FormatString="##,###.00"/>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell Formula="SumExpand('TestNumber')" MergedColumnSpan="2" MergedRowSpan="1" SourceType="Formula">
+                        <Display EncodingType="" ErrorCorrectionLevel="">
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell Caption="测试字典" FieldKey="TestDict" IsPrimary="true" Key="TestDict" SourceType="Field" TableKey="TestPrintDetail">
+                        <Display>
+                            <Format DataType="Dict" FieldKeys="Name" ItemKey="Operator"/>
+                            <Border RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                        <CellText>
+                            <![CDATA[测试字典]]>
+                        </CellText>
+                    </Cell>
+                    <Cell Caption="测试日期" FieldKey="TestDate" Key="TestDate" SourceType="Field" TableKey="TestPrintDetail">
+                        <Display>
+                            <Format DataType="Date" FormatString="yyyy-MM-dd HH:mm:ss"/>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell Caption="测试下拉框" FieldKey="TestComboBox" Key="TestComboBox" SourceType="Field" TableKey="TestPrintDetail">
+                        <Display>
+                            <Format DataType="List"/>
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                </Row>
+                <Row Height="30" BackColor="0xffffffff" Type="DetailTail">
+                    <Cell Caption="总计">
+                        <Display EncodingType="" ErrorCorrectionLevel="">
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                        <CellText>
+                            <![CDATA[总计]]>
+                        </CellText>
+                    </Cell>
+                    <Cell Formula="Sum('TestNumber')" SourceType="Formula">
+                        <Display EncodingType="" ErrorCorrectionLevel="">
+                            <Border BottomColor="#000000" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell>
+                        <Display EncodingType="" ErrorCorrectionLevel="">
+                            <Border TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell>
+                        <Display EncodingType="" ErrorCorrectionLevel="">
+                            <Border/>
+                        </Display>
+                    </Cell>
+                    <Cell>
+                        <Display EncodingType="" ErrorCorrectionLevel="">
+                            <Border/>
+                        </Display>
+                    </Cell>
+                    <Cell/>
+                </Row>
+            </Rows>
+        </Section>
+        <Section Type="Paragraph" Key="second_head">
+            <Columns>
+                <Column Width="135"/>
+                <Column Width="135"/>
+                <Column Width="135"/>
+                <Column Width="135"/>
+            </Columns>
+            <Rows>
+                <Row Height="30">
+                    <Cell Caption="制单人" Key="Lab_Creator" MergedColumnSpan="1" MergedRowSpan="1">
+                        <Display>
+                            <Border BottomColor="0x000000ff" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell Caption="制单人" FieldKey="Creator" Key="Creator" MergedColumnSpan="1" MergedRowSpan="1" SourceType="Field" TableKey="TestPrintHead">
+                        <Display>
+                            <Format DataType="Dict" FieldKeys="Name" ItemKey="Operator"/>
+                            <Border BottomColor="0x000000ff" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell Caption="制单时间" Key="Lab_CreateTime" MergedColumnSpan="1" MergedRowSpan="1">
+                        <Display>
+                            <Border BottomColor="0x000000ff" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell Caption="制单时间" FieldKey="CreateTime" Key="CreateTime" MergedColumnSpan="1" MergedRowSpan="1" SourceType="Field" TableKey="TestPrintHead">
+                        <Display>
+                            <Format DataType="Date" FormatString="yyyy-MM-dd HH:mm:ss"/>
+                            <Border BottomColor="0x000000ff" BottomStyle="1" RightColor="#000000" RightStyle="1" TopColor="#000000" TopStyle="1" LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                </Row>
+                <Row Height="30">
+                    <Cell Caption="修改人" Key="Lab_Modifier" MergedColumnSpan="1" MergedRowSpan="1" Overflow="2">
+                        <Display>
+                            <Border BottomColor="0x000000ff" BottomStyle="1" RightColor="0x000000ff" RightStyle="1" TopColor="0x000000ff" TopStyle="1" LeftColor="0x000000ff" LeftStyle="1"/>
+                            <ImageStyle/>
+                        </Display>
+                    </Cell>
+                    <Cell Caption="修改人" FieldKey="Modifier" Key="Modifier" MergedColumnSpan="1" MergedRowSpan="1" SourceType="Field" TableKey="TestPrintHead">
+                        <Display>
+                            <Format DataType="Dict" FieldKeys="Name" ItemKey="Operator"/>
+                            <Border BottomColor="0x000000ff" BottomStyle="1" RightColor="0x000000ff" RightStyle="1" TopColor="0x000000ff" TopStyle="1" LeftColor="0x000000ff" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell Caption="修改时间" Key="Lab_ModifyTime" MergedColumnSpan="1" MergedRowSpan="1">
+                        <Display>
+                            <Border BottomColor="0x000000ff" BottomStyle="1" RightColor="0x000000ff" RightStyle="1" TopColor="0x000000ff" TopStyle="1" LeftColor="0x000000ff" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell Caption="修改时间" FieldKey="ModifyTime" Key="ModifyTime" MergedColumnSpan="1" MergedRowSpan="1" SourceType="Field" TableKey="TestPrintHead">
+                        <Display>
+                            <Format DataType="Date" FormatString="yyyy-MM-dd HH:mm:ss"/>
+                            <Border BottomColor="0x000000ff" BottomStyle="1" RightColor="0x000000ff" RightStyle="1" TopColor="0x000000ff" TopStyle="1" LeftColor="0x000000ff" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                </Row>
+            </Rows>
+        </Section>
+        <Section Type="PageTail">
+            <Columns>
+                <Column Width="134"/>
+                <Column Width="136"/>
+                <Column Width="135"/>
+                <Column Width="136"/>
+            </Columns>
+            <Rows>
+                <Row Height="30">
+                    <Cell>
+                        <Display EncodingType="" ErrorCorrectionLevel="">
+                            <Border RightColor="#cc3333" RightStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell>
+                        <Display EncodingType="" ErrorCorrectionLevel="">
+                            <Border TopColor="#cc3333" TopStyle="1" LeftColor="#cc3333" LeftStyle="1"/>
+                        </Display>
+                        <CellText>
+                            <![CDATA[测试1112]]>
+                        </CellText>
+                    </Cell>
+                    <Cell>
+                        <Display EncodingType="" ErrorCorrectionLevel="">
+                            <Border/>
+                        </Display>
+                    </Cell>
+                    <Cell>
+                        <Display EncodingType="" ErrorCorrectionLevel="">
+                            <Border/>
+                        </Display>
+                    </Cell>
+                </Row>
+                <Row Height="30">
+                    <Cell/>
+                    <Cell>
+                        <Display EncodingType="" ErrorCorrectionLevel="">
+                            <Border TopColor="#cc3333" TopStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell>
+                        <Display EncodingType="" ErrorCorrectionLevel="">
+                            <Border BottomColor="#b31a1a" BottomStyle="3"/>
+                        </Display>
+                    </Cell>
+                    <Cell>
+                        <Display EncodingType="" ErrorCorrectionLevel="">
+                            <Border BottomColor="#b31a1a" BottomStyle="2"/>
+                        </Display>
+                    </Cell>
+                </Row>
+                <Row Height="30">
+                    <Cell>
+                        <Display EncodingType="" ErrorCorrectionLevel="">
+                            <Border LeftColor="#000000" LeftStyle="1"/>
+                        </Display>
+                    </Cell>
+                    <Cell Caption="页码" Key="page" PageNo="Page" SourceType="PageNo">
+                        <Display EncodingType="" ErrorCorrectionLevel="">
+                            <Border RightColor="#b31a1a" RightStyle="3"/>
+                        </Display>
+                        <CellText>
+                            <![CDATA[页码]]>
+                        </CellText>
+                    </Cell>
+                    <Cell>
+                        <Display EncodingType="" ErrorCorrectionLevel="">
+                            <Border BottomColor="#b31a1a" BottomStyle="3" TopColor="#b31a1a" TopStyle="3" LeftColor="#b31a1a" LeftStyle="3"/>
+                        </Display>
+                    </Cell>
+                    <Cell>
+                        <Display EncodingType="" ErrorCorrectionLevel="">
+                            <Border BottomColor="#b31a1a" BottomStyle="2" RightColor="#b31a1a" RightStyle="2" TopColor="#b31a1a" TopStyle="2"/>
+                        </Display>
+                    </Cell>
+                </Row>
+            </Rows>
+        </Section>
+    </Grid>
+</Report>

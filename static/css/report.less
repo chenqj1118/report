@@ -1,0 +1,458 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  overflow: hidden;
+  font-size: 14px;
+}
+
+ul, li {
+  list-style: none;
+}
+
+table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.report-toolbar {
+  background: #dedede;
+  display: flex;
+  box-sizing: border-box;
+  // text-align: center;
+  &:hover {
+    color: red;
+  }
+
+  .btn {
+    vertical-align: middle;
+    background: #fff;
+    box-shadow: 2px 2px 2px #aaa;
+    border: 1px solid #ccc;
+    padding: 5px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    margin-right: 0.5%;
+    outline: none;
+  }
+
+  .l {
+    flex: 1;
+    padding: 30px 0 30px 48px;
+  }
+
+  .r {
+    width: 500px;
+    box-sizing: border-box;
+    background-color: #e9e9e9;
+    text-align: right;
+    padding: 30px 48px 30px 0;
+  }
+}
+
+.report-body {
+  position: relative;
+  padding-right: 500px;
+  box-sizing: border-box;
+
+  .page {
+    .report-container {
+      box-sizing: border-box;
+      overflow: auto;
+      padding: 30px;
+      background: #f5f5f5;
+
+      .paper {
+        margin: 0 auto;
+        background: #fff;
+        box-shadow: 0 0 5px #ccc;
+        padding: 60px;
+        min-width: 700px;
+
+        .jexcel_container {
+          background: #eee;
+          padding: 20px;
+          border: 1px solid #ccc;
+          width: 100%;
+          margin-bottom: 30px;
+        }
+      }
+    }
+  }
+
+  /*右侧*/
+  .report-rightpanel {
+    width: 500px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    box-sizing: border-box;
+    padding: 30px;
+    z-index: 9999;
+    background-color: #e9e9e9;
+
+    .report-baseAttr {
+      display: flex;
+      background: #fff;
+      padding: 15px;
+      margin-bottom: 20px;
+      .form-key{
+        width: 65px;
+      }
+      .form-value{
+        padding-left:75px;
+      }
+      p {
+        flex: 1;
+      }
+    }
+  }
+}
+
+.layoutLeftFull {
+  .report-body {
+    padding-right: 0;
+    .report-container {
+      width: 100% !important;
+    }
+  }
+  .report-toolbar .r {
+    background: none;
+    width:300px;
+  }
+}
+
+/*弹出层相关*/
+.fixGrayLayer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.53);
+  z-index: 10001;
+}
+
+.pupDialog {
+  width: 50%;
+  background: #fff;
+  border: 1px solid #ccc;
+  position: fixed;
+  z-index: 10002;
+  left: 50%;
+  top: 50%;
+  margin-left: -25%;
+  margin-top:-15%;
+  padding:10px 40px 30px;
+  box-sizing: border-box;
+  &.pupDialog_1{
+    width:640px;
+    margin-left:-320px;
+    margin-top:-240px;
+  }
+  &.pupDialog_2{
+    width:500px;
+    margin-left:-250px;
+    margin-top:-180px;
+  }
+  &.pupDialog_3{
+    height: 60%;
+  }
+
+  .dialogContent {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+
+    h2 {
+      height: 40px;
+      line-height: 40px;
+      font-size: 1.2em;
+    }
+
+    .item {
+      .item-row {
+        border: 1px solid #eee;
+        margin-bottom: 15px;
+        clear: both;
+        overflow: hidden;
+
+        h3 {
+          font-size: 14px;
+          font-weight: normal;
+          background: #eee;
+          height: 30px;
+          line-height: 30px;
+          text-indent: 10px;
+        }
+        ul{
+          width:90%;
+          margin: 0 auto;
+        }
+      }
+    }
+
+  }
+
+  .close {
+    width: 30px;
+    height: 30px;
+    font-size: 24px;
+    position: absolute;
+    z-index: 10002;
+    right: 10px;
+    top: 10px;
+    cursor: pointer;
+  }
+}
+
+
+/*tab相关*/
+.tabBox {
+  background: #fff;
+  .tabHead {
+    display: flex;
+    background: #f5f5f5;
+    border: 1px solid #ccc;
+    li {
+      flex: 1;
+      text-align: center;
+      border-right: 1px solid #ccc;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 5px;
+
+      &:last-child {
+        border: 0;
+      }
+    }
+
+    .actived {
+      background: #fff;
+      border-bottom: 1px solid #fff;
+      position: relative;
+      bottom: -1px;
+    }
+  }
+
+
+  .tabContent {
+    border: 1px solid #ccc;
+    border-top: 0;
+    min-height: 200px;
+    padding: 10px 20px;
+    overflow: auto;
+    box-sizing: border-box;
+
+    .tabItem {
+      li {
+        position: relative;
+        margin: 10px 0;
+      }
+
+      .tabBox {
+        background: #fff;
+
+        .cellTabHead {
+          border-bottom: 1px solid #ccc;
+          padding-bottom: 10px;
+          overflow: hidden;
+
+          li {
+            float: left;
+            width: auto;
+            margin: 0 5px;
+            text-align: center;
+
+            span {
+              display: inline-table;
+              border: 1px solid #ccc;
+              text-align: center;
+              padding: 5px;
+              border-radius: 5px;
+              background: #f2f2f2;
+              cursor: pointer;
+            }
+
+            &.actived {
+              span {
+                background: #ccc;
+                border-bottom: 1px solid #fff;
+                position: relative;
+                bottom: -1px;
+              }
+            }
+          }
+        }
+      }
+
+      // 数值格式
+      .dataType-panel {
+        padding: 10px 15px;
+        min-height: 260px;
+
+        p {
+          margin-bottom: 10px;
+        }
+        ul.list{
+          border: 1px solid #ccc;
+          margin-bottom:10px;
+          min-height: 200px;
+          max-height: 240px;
+          overflow: auto;
+          li {
+            float: none;
+            cursor: pointer;
+            line-height: 30px;
+            padding-left:5px;
+            box-sizing: border-box;
+            margin: 0;
+            &:nth-of-type(odd) {
+              background: #f3f3f3;
+            }
+          }
+          .actived {
+            background: #00d5ff !important;
+          }
+        }
+        .dataType-panel-left {
+          float: left;
+          width: 35%;
+        }
+
+        .dataType-panel-right {
+          float: right;
+          width: 60%;
+          overflow: hidden;
+          .form-key{
+            width:80px;
+          }
+          .form-value{
+            padding-left:90px;
+          }
+          .dataTypeItem {
+            .table-box {
+              border: 1px solid #ccc;
+              background: #eee;
+              min-height: 180px;
+              padding:5px;
+            }
+
+            table {
+              thead{
+                background: #d8d8d8;
+              }
+              td {
+                border:1px solid #ccc;
+                text-align: center;
+                padding: 3px;
+                box-sizing: border-box;
+                input[type='text']{
+                  width:100%;
+                  height: 25px;
+                }
+              }
+            }
+
+            .btn-box {
+              margin-top: 10px;
+              text-align: right;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/*form相关样式*/
+.form {
+  width: 100%;
+
+  li {
+    position: relative;
+    margin: 10px 0;
+    float: left;
+    width: 100%;
+  }
+
+  .col-1 {
+    width: 100%;
+  }
+
+  .col-2 {
+    width: 50%;
+  }
+
+  .col-3 {
+    width: 33%;
+  }
+
+  .col-4 {
+    width: 25%;
+  }
+
+  .form-key {
+    width: 110px;
+    text-align: left;
+    position: absolute;
+    left: 10px;
+    top: 3px;
+    z-index: 1;
+    color: #666;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+  .form-value {
+    padding-left: 130px;
+    position: relative;
+
+    .color-picker {
+      display: none;
+      position: absolute;
+      z-index: 2;
+    }
+    &.custom-size {
+      input {
+        width: 40%;
+        margin-right: 10px;
+      }
+    }
+  }
+  input[type='text'], select {
+    width: 100%;
+    border: 1px solid #e4e4e4;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    text-indent: 8px;
+    padding: 0;
+    height: 25px;
+    line-height: 25px;
+    box-sizing: border-box;
+  }
+
+  input[type="radio"] {
+    display: inline-table;
+    width: 15px;
+    height: 15px;
+    margin-right: 5px;
+  }
+
+  button, .btn {
+    padding: 5px;
+    border: 1px solid #e4e4e4;
+    cursor: pointer;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+  }
+
+  .btn.actived {
+    background: #00d5ff;
+    color: #fff;
+  }
+} 

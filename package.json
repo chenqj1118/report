@@ -1,0 +1,19 @@
+{
+  "name": "report",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Run 'node test-server.js' then open 'http://localhost:<port>/web-test/test.html' to run test.\" && exit 1"
+  },
+  "repository": {
+    "type": "svn",
+    "url": "svn+https://dev.bokesoft.com:9443/svn/Yigo-redist/trunk/Frontend/modules/bokesoft.com/cms/boke-cms-ajax"
+  },
+  "author": "bokesoft.com",
+  "license": "Commercial",
+  "dependencies": {},
+  "devDependencies": {
+    "webpack-dev-web-test": "file:../../../modules/supports/webpack-dev-web-test"
+  }
+}

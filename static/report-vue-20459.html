@@ -1,0 +1,2126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>报表打印2</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1">
+    <link rel="stylesheet" href="../static/js/3rd/jexcel-master/dist/jexcel.css">
+    <link rel="stylesheet" href="../static/js/3rd/jsuites-master/dist/jsuites.css">
+    <link rel="stylesheet" href="../static/js/3rd/colorpicker-1.9.62/dist/colorpicker.css">
+    <!--<link rel="stylesheet" href="../static/css/report.css">-->
+    <link rel="stylesheet/less" href="../static/css/report.less">
+    <script src="../static/css/less.min.js"></script>
+</head>
+<body>
+<div id="report-tpl">
+    <div class="reportData" v-if="reportData">
+        <div class="container" :class="currentJexcl&&currentGrid ? '':'layoutLeftFull'">
+            <div class="report-toolbar">
+                <div class="l">
+                    <button class="btn merge-cell-btn" title="合并" @click="_myMergeCells()">合并</button>
+                    <button class="btn split-cell-btn" title="拆分" @click="_myRemoveMerge()">拆分</button>
+                    <button class="btn insert-section-ahead-btn" title="前插一段" @click="_myInsertedGrid(3,5,true)">前插一段
+                    </button>
+                    <button class="btn insert-section-behind-btn" title="后插一段" @click="_myInsertedGrid(3,5,false)">
+                        后插一段
+                    </button>
+                    <button class="btn remove-section-btn" title="移除段" @click="_myRemoveGrid()">移除段</button>
+                    <button class="btn insert-row-ahead-btn" title="前插一行"
+                            @click="_myInsertedRow(currentCells.c1[2],true)">前插一行
+                    </button>
+                    <button class="btn insert-row-behind-btn" title="后插一行"
+                            @click="_myInsertedRow(currentCells.c2[2],false)">后插一行
+                    </button>
+                    <button class="btn remove-row-btn" title="移除行" @click="_myRemoveRow()">移除行</button>
+                    <button class="btn insert-col-ahead-btn" title="前插一列"
+                            @click="_myInsertedColumn(currentCells.c1[1],true)">前插一列
+                    </button>
+                    <button class="btn insert-col-behind-btn" title="后插一列"
+                            @click="_myInsertedColumn(currentCells.c2[1],false)">后插一列
+                    </button>
+                    <button class="btn remove-col-btn" title="移除列" @click="_myRemoveColumn()">移除列</button>
+                </div>
+                <div class="r">
+                    <button class="btn" title="页面属性" @click="_showDialog(1)">页面属性</button>
+                    <button class="btn" title="报表属性" @click="_showDialog(2)">报表属性</button>
+                    <button class="btn" style="background:#00ffff;color:#00a1ff;" title="查看最新数据"
+                            @click="_showNewReportData">查看最新数据
+                    </button>
+                </div>
+            </div>
+            <div class="report-body" v-show="reportData" style="display: none;">
+                <div class="page">
+                    <div class="report-container">
+                        <div class="paper"
+                            :style='"width:"+reportData.pageWidth+"px;height:"+reportData.pageHeight+"px;padding:"+reportData.topMargin+"px "+reportData.rightMargin+"px "+reportData.bottomMargin+"px "+reportData.leftMargin+"px;"'>
+                            <!--此处渲染jexcel-->
+                        </div>
+                    </div>
+                </div>
+                <div class="report-rightpanel" v-show="currentJexcl&&currentGrid" style="display: none;">
+                    <div class="report-baseAttr" v-if="currentJexcl&&currentGrid">
+                        <ul class="form">
+                            <li :class="currentGrid.type==2 ? 'col-2' : 'col-1'">
+                                <label class="form-key">段类型</label>
+                                <div class="form-value">
+                                    <select v-model="currentGrid.type" @change="_changeGridType">
+                                        <option value="0">页眉</option>
+                                        <option value="1">段落</option>
+                                        <option value="2">表格</option>
+                                        <option value="3">页尾</option>
+                                    </select>
+                                </div>
+                            </li>
+                            <li class="col-2" v-if="currentGrid.type==2"><!--只有表格才有行类型-->
+                                <label class="form-key">行类型</label>
+                                <div class="form-value">
+                                    <select v-model="currentGrid.rows.elementArray[currentCells.c1[2]].type">
+                                        <option value="-1">无</option>
+                                        <option value="4">表格标题头</option>
+                                        <option value="5">明细头</option>
+                                        <option value="6">段落</option>
+                                        <option value="7">承上行</option>
+                                        <option value="8">明细尾</option>
+                                        <option value="9">分组行</option>
+                                        <option value="10">启下行</option>
+                                        <option value="11">明细行</option>
+                                        <option value="12">表格标题尾</option>
+                                    </select>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tabBox" v-if="currentJexcl&&currentCellsElement">
+                        <ul class="tabHead">
+                            <li @click="_changeTab(0)" :class="tab.tabIndex==0 ? 'actived':''">格式</li>
+                            <li @click="_changeTab(1)" :class="tab.tabIndex==1 ? 'actived':''">单元格</li>
+                            <li @click="_changeTab(2)" :class="tab.tabIndex==2 ? 'actived':''">行</li>
+                            <li @click="_changeTab(3)" :class="tab.tabIndex==3 ? 'actived':''">列</li>
+                            <li @click="_changeTab(4)" :class="tab.tabIndex==4 ? 'actived':''">段</li>
+                        </ul>
+                        <div class="tabContent form" :style="'height:'+(windowHeight-240)+'px'">
+                            <div class="tabItem" v-show="tab.tabIndex==0" style="display: block">
+                                <ul>
+                                    <li>
+                                        <label class="form-key">标识</label>
+                                        <div class="form-value">
+                                            <input type="text" v-model="currentCellsElement[0].cellEle.key"/>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">名称</label>
+                                        <div class="form-value">
+                                            <input type="text" v-model="currentCellsElement[0].cellEle.text"
+                                                   @change="_setCellFont('text')"/>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">前景色</label>
+                                        <div class="form-value">
+                                            <input type="text" data-tip="foreColor"
+                                                   v-model="currentCellsElement[0].cellEle.display.foreColor"
+                                                   @focus="_initColorPicker"
+                                                   :style="'background-color:'+_getColor(currentCellsElement[0].cellEle.display.foreColor)"/>
+                                            <div class="color-picker"></div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">背景色</label>
+                                        <div class="form-value">
+                                            <input type="text" data-tip="backColor"
+                                                   v-model="currentCellsElement[0].cellEle.display.backColor"
+                                                   @focus="_initColorPicker"
+                                                   :style="'background-color:'+_getColor(currentCellsElement[0].cellEle.display.backColor)"/>
+                                            <div class="color-picker"></div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">边框色</label>
+                                        <div class="form-value">
+                                            <input type="text" data-tip="borderColor"
+                                                   v-model="cellBorder.currentBorderColor"
+                                                   @focus="_initColorPicker"
+                                                   :style="'color: #fff;background-color:'+_getColor(cellBorder.currentBorderColor)"/>
+                                            <div class="color-picker"></div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">边框类型</label>
+                                        <div class="form-value">
+                                            <select v-model="cellBorder.currentBorderStyle"
+                                                    @change="_renderCellsBorder">
+                                                <option value="0">无</option>
+                                                <option value="1">实线边框</option>
+                                                <option value="2">虚线边框</option>
+                                                <option value="3">加粗边框</option>
+                                            </select>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">边框样式</label>
+                                        <div class="form-value">
+                                            <select v-model="cellBorder.currentBorderType"
+                                                    @change="_renderCellsBorder">
+                                                <option value="0">全边框</option>
+                                                <option value="1">全无边框</option>
+                                                <option value="2">全外边框</option>
+                                                <option value="3">顶外边框</option>
+                                                <option value="4">右外边框</option>
+                                                <option value="5">底外边框</option>
+                                                <option value="6">左外边框</option>
+                                                <option value="7">顶边框</option>
+                                                <option value="8">右边框</option>
+                                                <option value="9">底边框</option>
+                                                <option value="10">左边框</option>
+                                            </select>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">字体</label>
+                                        <div class="form-value">
+                                            <select v-model="currentCellsElement[0].cellEle.display.font.name"
+                                                    @change="_setCellFont('family')">
+                                                <option value="宋体">宋体</option>
+                                                <option value="新宋体">新宋体</option>
+                                                <option value="仿宋">仿宋</option>
+                                                <option value="黑体">黑体</option>
+                                                <option value="微软雅黑">微软雅黑</option>
+                                                <option value="隶书">隶书</option>
+                                                <option value="楷体">楷体</option>
+                                                <option value="Arial">Arial</option>
+                                                <option value="Times New Roman">Times New Roman</option>
+                                            </select>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">字号</label>
+                                        <div class="form-value">
+                                            <select v-model="currentCellsElement[0].cellEle.display.font.size"
+                                                    @change="_setCellFont('size')">
+                                                <option value="8">8</option>
+                                                <option value="10">10</option>
+                                                <option value="12">12</option>
+                                                <option value="14">14</option>
+                                                <option value="16">16</option>
+                                                <option value="18">18</option>
+                                                <option value="20">20</option>
+                                                <option value="30">30</option>
+                                                <option value="50">50</option>
+                                            </select>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">字体样式</label>
+                                        <div class="form-value">
+                                            <button class="btn" type="button"
+                                                    :class="currentCellsElement[0].cellEle.display.font.bold ? 'actived':''"
+                                                    @click="_setCellFont('bold')">B
+                                            </button>
+                                            <button class="btn" type="button"
+                                                    :class="currentCellsElement[0].cellEle.display.font.italic ? 'actived':''"
+                                                    @click="_setCellFont('italic')">I
+                                            </button>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">水平对齐方式</label>
+                                        <div class="form-value">
+                                            <button class="btn" data-value="left" type="button"
+                                                    :class="currentCellsElement[0].cellEle.display.hAlign==0 ? 'actived':''"
+                                                    @click="_setCellFont('h-left')">左
+                                            </button>
+                                            <button class="btn" data-value="center" type="button"
+                                                    :class="currentCellsElement[0].cellEle.display.hAlign==1 ? 'actived':''"
+                                                    @click="_setCellFont('h-center')">中
+                                            </button>
+                                            <button class="btn" data-value="right" type="button"
+                                                    :class="currentCellsElement[0].cellEle.display.hAlign==2 ? 'actived':''"
+                                                    @click="_setCellFont('h-right')">右
+                                            </button>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">垂直对齐方式</label>
+                                        <div class="form-value">
+                                            <button class="btn" data-value="top" type="button"
+                                                    :class="currentCellsElement[0].cellEle.display.vAlign==0 ? 'actived':''"
+                                                    @click="_setCellFont('v-top')">上
+                                            </button>
+                                            <button class="btn" data-value="middle" type="button"
+                                                    :class="currentCellsElement[0].cellEle.display.vAlign==1 ? 'actived':''"
+                                                    @click="_setCellFont('v-middle')">中
+                                            </button>
+                                            <button class="btn" data-value="bottom" type="button"
+                                                    :class="currentCellsElement[0].cellEle.display.vAlign==2 ? 'actived':''"
+                                                    @click="_setCellFont('v-bottom')">下
+                                            </button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="tabItem" v-show="tab.tabIndex==1" style="display: none">
+                                <div class="tabBox" v-if="currentCellsElement[0].cellEle">
+                                    <ul class="cellTabHead">
+                                        <li @click="_changeCellTab(0)" :class="tab.celltabIndex==0 ? 'actived':''">
+                                            <span>数据</span></li>
+                                        <li @click="_changeCellTab(1)" :class="tab.celltabIndex==1 ? 'actived':''">
+                                            <span>数值格式</span></li>
+                                        <li @click="_changeCellTab(2)" :class="tab.celltabIndex==2 ? 'actived':''">
+                                            <span>显示格式</span></li>
+                                    </ul>
+                                    <div class="cellTabContent">
+                                        <div class="tabItem" v-show="tab.celltabIndex==0" style="display: block">
+                                            <ul>
+                                                <li>
+                                                    <label class="form-key">标识</label>
+                                                    <div class="form-value">
+                                                        <input type="text"
+                                                               v-model="currentCellsElement[0].cellEle.key"/>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <label class="form-key">名称</label>
+                                                    <div class="form-value">
+                                                        <input type="text"
+                                                               v-model="currentCellsElement[0].cellEle.text"
+                                                               @change="_setCellFont('text')"/>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <label class="form-key">单元格类型</label>
+                                                    <div class="form-value">
+                                                        <select v-model="currentCellsElement[0].cellEle.contentType">
+                                                            <option value="0">文本</option>
+                                                            <option value="1">图片</option>
+                                                        </select>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <label class="form-key">是否主键字段</label>
+                                                    <div class="form-value">
+                                                        <select v-model="currentCellsElement[0].cellEle.primary">
+                                                            <option value="true">是</option>
+                                                            <option value="false">否</option>
+                                                        </select>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <label class="form-key">数据来源类型</label>
+                                                    <div class="form-value">
+                                                        <select v-model="currentCellsElement[0].cellEle.sourceType" @change="_changeSoureType">
+                                                            <option value="-1">无</option>
+                                                            <option value="0">字段域</option>
+                                                            <option value="1">表达式</option>
+                                                            <option value="2">接口</option>
+                                                            <option value="3">页码</option>
+                                                            <option value="4">常量</option>
+                                                            <option value="5">系统域</option>
+                                                        </select>
+                                                    </div>
+                                                </li>
+                                                <li v-if="currentCellsElement[0].cellEle.contentType==1">
+                                                    <label class="form-key">图片来源类型</label>
+                                                    <div class="form-value">
+                                                        <select v-model="currentCellsElement[0].cellEle.imageSourceType">
+                                                            <option value="-1"></option>
+                                                            <option value="1">数据</option>
+                                                            <option value="2">资源</option>
+                                                            <option value="3">URL</option>
+                                                        </select>
+                                                    </div>
+                                                </li>
+                                                <li v-if="currentCellsElement[0].cellEle.contentType==1">
+                                                    <label class="form-key">路径</label>
+                                                    <div class="form-value">
+                                                        <input type="text"
+                                                               v-model="currentCellsElement[0].cellEle.path" placeholder="配置Resource文件夹下的图片,如：test.png"/>
+                                                    </div>
+                                                </li>
+                                                <li v-if="currentCellsElement[0].cellEle.sourceType==0"> <!--字段域-->
+                                                    <label class="form-key">表标识</label>
+                                                    <div class="form-value">
+                                                        <select v-model="currentGrid.rows.elementArray[currentCells.c1[2]].elementArray[currentCells.c1[1]].tableKey">
+                                                            <option v-for="(value, key) in reportData.dataSource.elementMap"
+                                                                    :value="key">{{key}} {{value.caption}}
+                                                            </option>
+                                                        </select>
+                                                    </div>
+                                                </li>
+                                                <li v-if="currentCellsElement[0].cellEle.sourceType==0 && currentGrid.rows.elementArray[currentCells.c1[2]].elementArray[currentCells.c1[1]].tableKey">
+                                                    <!--字段域-->
+                                                    <label class="form-key">域标识</label>
+                                                    <div class="form-value">
+                                                        <select v-model="currentGrid.rows.elementArray[currentCells.c1[2]].elementArray[currentCells.c1[1]].fieldKey">
+                                                            <option v-for="(value, key) in reportData.dataSource.elementMap[currentGrid.rows.elementArray[currentCells.c1[2]].elementArray[currentCells.c1[1]].tableKey].elementMap"
+                                                                    :value="key">{{key}} {{value.caption}}
+                                                            </option>
+                                                        </select>
+                                                    </div>
+                                                </li>
+                                                <li v-if="currentCellsElement[0].cellEle.sourceType==1"> <!--表达式-->
+                                                    <label class="form-key">表达式</label>
+                                                    <div class="form-value">
+                                                        <input type="text"
+                                                               v-model="currentCellsElement[0].cellEle.formula"/>
+                                                    </div>
+                                                </li>
+                                                <li v-if="currentCellsElement[0].cellEle.sourceType==2"> <!--接口-->
+                                                    <label class="form-key">接口</label>
+                                                    <div class="form-value">
+                                                        <input type="text"
+                                                               v-model="currentCellsElement[0].cellEle.impl"/>
+                                                    </div>
+                                                </li>
+                                                <li v-if="currentCellsElement[0].cellEle.sourceType==3 || currentCellsElement[0].cellEle.sourceType==4">
+                                                    <!--页码 or 常量-->
+                                                    <label class="form-key">页码</label>
+                                                    <div class="form-value">
+                                                        <select v-model="currentCellsElement[0].cellEle.pageNo">
+                                                            <option value="Page">页数</option>
+                                                            <option value="PageOfCount">总页数</option>
+                                                        </select>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <label class="form-key">排序类型</label>
+                                                    <div class="form-value">
+                                                        <select v-model="currentCellsElement[0].cellEle.sortType">
+                                                            <option value="-1">无排序</option>
+                                                            <option value="0">升序</option>
+                                                            <option value="1">降序</option>
+                                                        </select>
+                                                    </div>
+                                                </li>
+                                                <li v-if="currentCellsElement[0].cellEle.sourceType==5"> <!--系统域-->
+                                                    <label class="form-key">系统域</label>
+                                                    <div class="form-value">
+                                                        <select v-model="currentCellsElement[0].cellEle.systemContent">
+                                                            <option value="Page">页数</option>
+                                                            <option value="PageOfCount">总页数</option>
+                                                            <option value="RowIndexOfTotal">行序号</option>
+                                                            <option value="RowIndexOfPage">页内行序号</option>
+                                                        </select>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <label class="form-key"></label>
+                                                    <div class="form-value">
+                                                        <label>
+                                                            <input type="checkbox" class="checkbox"
+                                                                   :checked="currentCellsElement[0].cellEle.isSummary"
+                                                                   v-model="currentCellsElement[0].cellEle.isSummary"/>总结信息</label>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="tabItem" v-show="tab.celltabIndex==1" style="display: none">
+                                            <ul>
+                                                <li>
+                                                    <label class="form-key">数值</label>
+                                                    <div class="form-value">
+                                                        <input type="text" v-model="currentCellsElement[0].cellEle.display.format.transformer"/>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                            <div class="dataType-panel">
+                                                <div class="dataType-panel-left">
+                                                    <p>数值类型</p>
+                                                    <ul class="list">
+                                                        <li @click="_changeCellDataType(0)"
+                                                            :class="currentCellsElement[0].cellEle.display.format.dataType==0 ? 'actived' : ''">
+                                                            文本
+                                                        </li>
+                                                        <li @click="_changeCellDataType(1)"
+                                                            :class="currentCellsElement[0].cellEle.display.format.dataType==1 ? 'actived' : ''">
+                                                            字典
+                                                        </li>
+                                                        <li @click="_changeCellDataType(2)"
+                                                            :class="currentCellsElement[0].cellEle.display.format.dataType==2 ? 'actived' : ''">
+                                                            数值
+                                                        </li>
+                                                        <li @click="_changeCellDataType(3)"
+                                                            :class="currentCellsElement[0].cellEle.display.format.dataType==3 ? 'actived' : ''">
+                                                            单选列表项
+                                                        </li>
+                                                        <li @click="_changeCellDataType(4)"
+                                                            :class="currentCellsElement[0].cellEle.display.format.dataType==4 ? 'actived' : ''">
+                                                            多选列表项
+                                                        </li>
+                                                        <li @click="_changeCellDataType(5)"
+                                                            :class="currentCellsElement[0].cellEle.display.format.dataType==5 ? 'actived' : ''">
+                                                            货币
+                                                        </li>
+                                                        <li @click="_changeCellDataType(6)"
+                                                            :class="currentCellsElement[0].cellEle.display.format.dataType==6 ? 'actived' : ''">
+                                                            日期
+                                                        </li>
+                                                        <li @click="_changeCellDataType(7)"
+                                                            :class="currentCellsElement[0].cellEle.display.format.dataType==7 ? 'actived' : ''">
+                                                            多选字典
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                <div class="dataType-panel-right form">
+                                                    <div class="dataTypeItem"
+                                                         v-if="currentCellsElement[0].cellEle.display.format.dataType==0">
+                                                        <p>无定义</p>
+                                                    </div>
+                                                    <div class="dataTypeItem"
+                                                         v-if="currentCellsElement[0].cellEle.display.format.dataType==1">
+                                                        <ul>
+                                                            <li>
+                                                                <label class="form-key">字典</label>
+                                                                <div class="form-value">
+                                                                    <select v-model="currentCellsElement[0].cellEle.display.format.itemKey">
+                                                                        <option v-for="(value, key) in dicData"
+                                                                                :value="key">{{key}} {{value}}
+                                                                        </option>
+                                                                    </select>
+                                                                </div>
+                                                            </li>
+                                                            <li>
+                                                                <label class="form-key">字段列表</label>
+                                                                <div class="form-value">
+                                                                    <input type="text" v-model="currentCellsElement[0].cellEle.display.format.fieldKeys">
+                                                                </div>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="dataTypeItem"
+                                                         v-if="currentCellsElement[0].cellEle.display.format.dataType==2">
+                                                        <p>格式</p>
+                                                        <ul class="list">
+                                                            <li @click="_changeCellDataDataType" :class="currentCellsElement[0].cellEle.display.format.formatString=='###.##%'?'actived':''">###.##%</li>
+                                                            <li @click="_changeCellDataDataType" :class="currentCellsElement[0].cellEle.display.format.formatString=='###.00%'?'actived':''">###.00%</li>
+                                                            <li @click="_changeCellDataDataType" :class="currentCellsElement[0].cellEle.display.format.formatString=='###.##'?'actived':''">###.##</li>
+                                                            <li @click="_changeCellDataDataType" :class="currentCellsElement[0].cellEle.display.format.formatString=='##,###.##'?'actived':''">##,###.##</li>
+                                                            <li @click="_changeCellDataDataType" :class="currentCellsElement[0].cellEle.display.format.formatString=='##,###.00'?'actived':''">##,###.00</li>
+                                                        </ul>
+                                                        <input type="text" v-model="currentCellsElement[0].cellEle.display.format.formatString">
+                                                    </div>
+                                                    <div class="dataTypeItem"
+                                                         v-if="currentCellsElement[0].cellEle.display.format.dataType==3">
+                                                        <p>列表内容</p>
+                                                        <div class="table-box">
+                                                            <table>
+                                                                <thead>
+                                                                <tr>
+                                                                    <td width="20"></td>
+                                                                    <td>项目值</td>
+                                                                    <td>项目文本</td>
+                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                <tr v-for="(item, index) in currentCellsElement[0].cellEle.display.format.listItems">
+                                                                    <td>
+                                                                        {{index}}
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="text" v-model="item.value" @focus="_getCurrentRowIndex(index)">
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="text" v-model="item.text" @focus="_getCurrentRowIndex(index)">
+                                                                    </td>
+                                                                </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                        <div class="btn-box">
+                                                            <button @click="_cellDataDataListEvent('add')">新增</button>
+                                                            <button @click="_cellDataDataListEvent('delete')">删除</button>
+                                                            <button @click="_cellDataDataListEvent('goUp')">上移</button>
+                                                            <button @click="_cellDataDataListEvent('goDown')">下移</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="dataTypeItem"
+                                                         v-if="currentCellsElement[0].cellEle.display.format.dataType==4">
+                                                        <p>列表内容</p>
+                                                        <div class="table-box">
+                                                            <table>
+                                                                <thead>
+                                                                <tr>
+                                                                    <td width="20"></td>
+                                                                    <td>项目值</td>
+                                                                    <td>项目文本</td>
+                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                <tr v-for="(item, index) in currentCellsElement[0].cellEle.display.format.listItems">
+                                                                    <td>
+                                                                        {{index}}
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="text" v-model="item.value" @focus="_getCurrentRowIndex(index)">
+                                                                    </td>
+                                                                    <td>
+                                                                        <input type="text" v-model="item.text" @focus="_getCurrentRowIndex(index)">
+                                                                    </td>
+                                                                </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                        <div class="btn-box">
+                                                            <button @click="_cellDataDataListEvent('add')">新增</button>
+                                                            <button @click="_cellDataDataListEvent('delete')">删除</button>
+                                                            <button @click="_cellDataDataListEvent('goUp')">上移</button>
+                                                            <button @click="_cellDataDataListEvent('goDown')">下移</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="dataTypeItem"
+                                                         v-if="currentCellsElement[0].cellEle.display.format.dataType==5">
+                                                        <p>格式</p>
+                                                        <ul class="list">
+                                                            <li @click="_changeCellDataDataType" :class="currentCellsElement[0].cellEle.display.format.formatString=='$##,###.##'?'actived':''">$##,###.##</li>
+                                                            <li @click="_changeCellDataDataType" :class="currentCellsElement[0].cellEle.display.format.formatString=='¥##,###.##'?'actived':''">¥##,###.##</li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="dataTypeItem"
+                                                         v-if="currentCellsElement[0].cellEle.display.format.dataType==6">
+                                                        <p>格式</p>
+                                                        <ul class="list">
+                                                            <li @click="_changeCellDataDataType" :class="currentCellsElement[0].cellEle.display.format.formatString=='yyyyMMdd'?'actived':''">yyyyMMdd</li>
+                                                            <li @click="_changeCellDataDataType" :class="currentCellsElement[0].cellEle.display.format.formatString=='yyyy-M-d'?'actived':''">yyyy-M-d</li>
+                                                            <li @click="_changeCellDataDataType" :class="currentCellsElement[0].cellEle.display.format.formatString=='yyyy.MM.dd'?'actived':''">yyyy.MM.dd</li>
+                                                            <li @click="_changeCellDataDataType" :class="currentCellsElement[0].cellEle.display.format.formatString=='yyyy-MM-dd'?'actived':''">yyyy-MM-dd</li>
+                                                            <li @click="_changeCellDataDataType" :class="currentCellsElement[0].cellEle.display.format.formatString=='yyyy-MM-dd HH:mm:ss'?'actived':''">yyyy-MM-dd HH:mm:ss</li>
+                                                            <li @click="_changeCellDataDataType" :class="currentCellsElement[0].cellEle.display.format.formatString=='yyyy-M-d HH:mm:ss'?'actived':''">yyyy-M-d HH:mm:ss</li>
+                                                            <li @click="_changeCellDataDataType" :class="currentCellsElement[0].cellEle.display.format.formatString=='yyyy'?'actived':''">yyyy</li>
+                                                            <li @click="_changeCellDataDataType" :class="currentCellsElement[0].cellEle.display.format.formatString=='yyyyMM'?'actived':''">yyyyMM</li>
+                                                            <li @click="_changeCellDataDataType" :class="currentCellsElement[0].cellEle.display.format.formatString=='yyyy-M'?'actived':''">yyyy-M</li>
+                                                            <li @click="_changeCellDataDataType" :class="currentCellsElement[0].cellEle.display.format.formatString=='yyyy.MM'?'actived':''">yyyy.MM</li>
+                                                            <li @click="_changeCellDataDataType" :class="currentCellsElement[0].cellEle.display.format.formatString=='yyyy-MM'?'actived':''">yyyy-MM</li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="dataTypeItem"
+                                                         v-if="currentCellsElement[0].cellEle.display.format.dataType==7">
+                                                        <ul>
+                                                            <li>
+                                                                <label class="form-key">字典</label>
+                                                                <div class="form-value">
+                                                                    <select v-model="currentCellsElement[0].cellEle.display.format.itemKey">
+                                                                        <option v-for="(value, key) in dicData"
+                                                                                :value="key">{{key}} {{value}}
+                                                                        </option>
+                                                                    </select>
+                                                                </div>
+                                                            </li>
+                                                            <li>
+                                                                <label class="form-key">字段列表</label>
+                                                                <div class="form-value">
+                                                                    <input type="text" v-model="currentCellsElement[0].cellEle.display.format.fieldKeys">
+                                                                </div>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="tabItem" v-show="tab.celltabIndex==2" style="display: none">
+                                            <ul v-if="currentCellsElement[0].cellEle.display">
+                                                <li>
+                                                    <label class="form-key">水平对齐方式</label>
+                                                    <div class="form-value">
+                                                        <select v-model="currentCellsElement[0].cellEle.display.hAlign">
+                                                            <option value="0">左对齐</option>
+                                                            <option value="1">水平居中</option>
+                                                            <option value="2">右对齐</option>
+                                                        </select>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <label class="form-key">垂直对齐方式</label>
+                                                    <div class="form-value">
+                                                        <select v-model="currentCellsElement[0].cellEle.display.vAlign">
+                                                            <option value="0">顶对齐</option>
+                                                            <option value="1">垂直居中</option>
+                                                            <option value="2">底对齐</option>
+                                                        </select>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <label class="form-key">文本处理</label>
+                                                    <div class="form-value">
+                                                        <label><input type="radio" value="0"
+                                                                      v-model="currentCellsElement[0].cellEle.overflow"/>不处理</label>
+                                                        <label><input type="radio" value="1"
+                                                                      v-model="currentCellsElement[0].cellEle.overflow"/>适应大小</label>
+                                                        <label><input type="radio" value="2"
+                                                                      v-model="currentCellsElement[0].cellEle.overflow"/>适应内容</label>
+                                                        <label><input type="radio" value="3"
+                                                                      v-model="currentCellsElement[0].cellEle.overflow"/>文字换行</label>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <label class="form-key">左边距</label>
+                                                    <div class="form-value">
+                                                        <input type="text"
+                                                               v-model="currentCellsElement[0].cellEle.padding[0]"/>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <label class="form-key">顶边距</label>
+                                                    <div class="form-value">
+                                                        <input type="text"
+                                                               v-model="currentCellsElement[0].cellEle.padding[1]"/>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <label class="form-key">右边距</label>
+                                                    <div class="form-value">
+                                                        <input type="text"
+                                                               v-model="currentCellsElement[0].cellEle.padding[2]"/>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <label class="form-key">底边距</label>
+                                                    <div class="form-value">
+                                                        <input type="text"
+                                                               v-model="currentCellsElement[0].cellEle.padding[3]"/>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <label class="form-key">显示方式</label>
+                                                    <div class="form-value">
+                                                        <select v-model="currentCellsElement[0].cellEle.display.showType">
+                                                            <option value="TEXT">TEXT</option>
+                                                            <option value="AZTEC">AZTEC</option>
+                                                            <option value="CODABAR">CODABAR</option>
+                                                            <option value="CODE_39">CODE_39</option>
+                                                            <option value="CODE_93">CODE_93</option>
+                                                            <option value="DATA_MATRIX">DATA_MATRIX</option>
+                                                            <option value="EAN_8">EAN_8</option>
+                                                            <option value="EAN_13">EAN_13</option>
+                                                            <option value="ITF">ITF</option>
+                                                            <option value="MAXICODE">MAXICODE</option>
+                                                            <option value="PDF_417">PDF_417</option>
+                                                            <option value="QR_CODE">QR_CODE</option>
+                                                            <option value="RSS">RSS</option>
+                                                            <option value="RSS_EXPANDED">RSS_EXPANDED</option>
+                                                            <option value="UPC_A">UPC_A</option>
+                                                            <option value="UPC_E">UPC_E</option>
+                                                            <option value="UPC_EAN_EXTENSION">UPC_EAN_EXTENSION</option>
+                                                        </select>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <label class="form-key">编码方式</label>
+                                                    <div class="form-value">
+                                                        <select v-model="currentCellsElement[0].cellEle.display.encodingType">
+                                                            <option value="UTF-8">UTF-8</option>
+                                                            <option value="utf8">utf8</option>
+                                                            <option value="GBK">GBK</option>
+                                                            <option value="GB2312">GB2312</option>
+                                                            <option value="ASCII">ASCII</option>
+                                                            <option value="UTF8">UTF8</option>
+                                                        </select>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <label class="form-key" title="二维码纠错级别">二维码纠错级别</label>
+                                                    <div class="form-value">
+                                                        <select v-model="currentCellsElement[0].cellEle.display.errorCorrectionLevel">
+                                                            <option value="L">L</option>
+                                                            <option value="M">M</option>
+                                                            <option value="Q">Q</option>
+                                                            <option value="H">H</option>
+                                                        </select>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <label class="form-key">二维码边距</label>
+                                                    <div class="form-value">
+                                                        <select v-model="currentCellsElement[0].cellEle.display.margin">
+                                                            <option value="0">0</option>
+                                                            <option value="1">1</option>
+                                                            <option value="2">2</option>
+                                                            <option value="3">3</option>
+                                                            <option value="4">4</option>
+                                                        </select>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tabItem" v-show="tab.tabIndex==2" style="display: none">
+                                <ul>
+                                    <li>
+                                        <label class="form-key">行高</label>
+                                        <div class="form-value">
+                                            <input type="text"
+                                                   v-model="currentGrid.rows.elementArray[currentCells.c1[2]].height"
+                                                   @change="_setRowOrCol('row-height')"/>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">行类型</label>
+                                        <div class="form-value">
+                                            <select v-model="currentGrid.rows.elementArray[currentCells.c1[2]].type">
+                                                <option value="-1">无</option>
+                                                <option value="4">表格标题头</option>
+                                                <option value="5">明细头</option>
+                                                <option value="6">段落</option>
+                                                <option value="7">承上行</option>
+                                                <option value="8">明细行</option>
+                                                <option value="9">分组行</option>
+                                                <option value="10">启下行</option>
+                                                <option value="11">明细尾</option>
+                                                <option value="12">表格标题尾</option>
+                                            </select>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">背景颜色</label>
+                                        <div class="form-value">
+                                            <input type="text" data-tip="rowBackColor"
+                                                   v-model="currentGrid.rows.elementArray[currentCells.c1[2]].backColor"
+                                                   @focus="_initColorPicker"
+                                                   :style="'background-color:'+_getColor(currentGrid.rows.elementArray[currentCells.c1[2]].backColor)"/>
+                                            <div class="color-picker"></div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">表标识</label>
+                                        <div class="form-value">
+                                            <select v-model="currentGrid.rows.elementArray[currentCells.c1[2]].tableKey">
+                                                <option v-for="(value, key) in reportData.dataSource.elementMap"
+                                                        :value="key">{{key}} {{value.caption}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">是否拆行</label>
+                                        <div class="form-value">
+                                            <select v-model="currentGrid.rows.elementArray[currentCells.c1[2]].lineBreak">
+                                                <option value="true">是</option>
+                                                <option value="false">否</option>
+                                            </select>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">行分组标识</label>
+                                        <div class="form-value">
+                                            <input type="text"
+                                                   v-model="currentGrid.rows.elementArray[currentCells.c1[2]].groupKey"/>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">分组层级</label>
+                                        <div class="form-value">
+                                            <input type="text"
+                                                   v-model="currentGrid.rows.elementArray[currentCells.c1[2]].groupLevel"/>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">每页行数</label>
+                                        <div class="form-value">
+                                            <input type="text"
+                                                   v-model="currentGrid.rows.elementArray[currentCells.c1[2]].dtlCountEveryPage"/>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="tabItem" v-show="tab.tabIndex==3" style="display: none">
+                                <ul>
+                                    <li>
+                                        <label class="form-key">列类型</label>
+                                        <div class="form-value">
+                                            <select v-model="currentGrid.columns.elementArray[currentCells.c1[1]].type">
+                                                <option value="0">固定列</option>
+                                                <option value="1">扩展列</option>
+                                                <option value="2">分组列</option>
+                                                <option value="3">汇总列</option>
+                                            </select>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">列宽</label>
+                                        <div class="form-value">
+                                            <input type="text"
+                                                   v-model="currentGrid.columns.elementArray[currentCells.c1[1]].width"
+                                                   @change="_setRowOrCol('col-width')"/>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">列可见性</label>
+                                        <div class="form-value">
+                                            <input type="text"
+                                                   v-model="currentGrid.columns.elementArray[currentCells.c1[1]].visible"/>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">列扩展标识</label>
+                                        <div class="form-value">
+                                            <input type="text"
+                                                   v-model="currentGrid.columns.elementArray[currentCells.c1[1]].expandKey"/>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">是否锁定</label>
+                                        <div class="form-value">
+                                            <select v-model="currentGrid.columns.elementArray[currentCells.c1[1]].lock">
+                                                <option value="true">是</option>
+                                                <option value="false">否</option>
+                                            </select>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="tabItem" v-show="tab.tabIndex==4" style="display: none">
+                                <ul>
+                                    <li>
+                                        <label class="form-key">段类型</label>
+                                        <div class="form-value">
+                                            <select v-model="currentGrid.type" @change="_changeGridType">
+                                                <option value="0">页眉</option>
+                                                <option value="1">段落</option>
+                                                <option value="2">表格</option>
+                                                <option value="3">页尾</option>
+                                            </select>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">段标志</label>
+                                        <div class="form-value">
+                                            <input type="text" v-model="currentGrid.key"/>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">段名称</label>
+                                        <div class="form-value">
+                                            <input type="text" v-model="currentGrid.caption"/>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key" title="最小填充明细行数">最小填充明细行数</label>
+                                        <div class="form-value">
+                                            <input type="text" v-model="currentGrid.minFillRowCount"/>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label class="form-key">分页策略</label>
+                                        <div class="form-value">
+                                            <select v-model="currentGrid.pageBreakPolicy">
+                                                <option value="0">无分页</option>
+                                                <option value="1">根据分组头分页</option>
+                                            </select>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="fixGrayLayer" v-show="dialog.dialogShow" style="display: none"></div>
+        <div class="pupDialog" :class="'pupDialog_'+dialog.dialogIndex" v-show="dialog.dialogShow" style="display: none;">
+            <div class="dialogContent form">
+                <div class="paperAttr" v-show="dialog.dialogShow && dialog.dialogIndex==1" style="display: none;">
+                    <h2><span>页面属性</span></h2>
+                    <div class="item">
+                        <div class="item-row">
+                            <h3><span>纸张</span></h3>
+                            <ul>
+                                <li>
+                                    <label class="form-key">
+                                        <input type="radio" class="radio" :checked="!paperSizeCustom"
+                                               @change="_setPaperNotCustom">
+                                        <span>预定义</span>
+                                    </label>
+                                    <div class="form-value">
+                                        <select :disabled="paperSizeCustom" v-model="reportData.paperID"
+                                                @change="_changePaperType">
+                                            <option v-for="(value, key) in paperType"
+                                                    :value="key">{{key}} {{value[0]}}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </li>
+                                <li>
+                                    <label class="form-key">
+                                        <input type="radio" class="radio" value="Custom"
+                                               v-model="reportData.paperID" @change="_setPaperCustom">
+                                        <span>自定义大小</span>
+                                    </label>
+                                    <div class="form-value custom-size">
+                                        <span>宽</span>
+                                        <input :disabled="!paperSizeCustom" type="text" v-model="reportData.pageWidth">
+                                        <span>高</span>
+                                        <input :disabled="!paperSizeCustom" type="text" v-model="reportData.pageHeight">
+                                    </div>
+                                </li>
+                                <li>
+                                    <label class="form-key"></label>
+                                    <div class="form-value">
+                                        <label><input type="checkbox" class="checkbox"
+                                                      :checked="reportData.virtualPage"
+                                                      v-model="reportData.virtualPage">虚拟页</label>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="item-row">
+                            <h3><span>边距</span></h3>
+                            <ul>
+                                <li class="col-2">
+                                    <label class="form-key">左边距</label>
+                                    <div class="form-value">
+                                        <input type="text" v-model="reportData.leftMargin">
+                                    </div>
+                                </li>
+                                <li class="col-2">
+                                    <label class="form-key">右边距</label>
+                                    <div class="form-value">
+                                        <input type="text" v-model="reportData.rightMargin">
+                                    </div>
+                                </li>
+                                <li class="col-2">
+                                    <label class="form-key">上边距</label>
+                                    <div class="form-value">
+                                        <input type="text" v-model="reportData.topMargin">
+                                    </div>
+                                </li>
+                                <li class="col-2">
+                                    <label class="form-key">下边距</label>
+                                    <div class="form-value">
+                                        <input type="text" v-model="reportData.bottomMargin">
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="item-row">
+                            <h3><span>方向</span></h3>
+                            <ul>
+                                <li class="col-2">
+                                    <label class="form-key"></label>
+                                    <div class="form-value">
+                                        <label>
+                                            <input type="radio" value="0" class="radio">横向
+                                        </label>
+                                    </div>
+                                </li>
+                                <li class="col-2">
+                                    <label class="form-key"></label>
+                                    <div class="form-value">
+                                        <label>
+                                            <input type="radio" value="1" class="radio">纵向
+                                        </label>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="reportAttr form" v-show="dialog.dialogShow && dialog.dialogIndex==2"
+                     style="display: none;">
+                    <h2><span>报表属性</span></h2>
+                    <div class="item">
+                        <div class="item-row">
+                            <h3><span>报表属性</span></h3>
+                            <ul>
+                                <li>
+                                    <label class="form-key">报表标识</label>
+                                    <div class="form-value">
+                                        <input type="text" v-model="reportData.key"/>
+                                    </div>
+                                </li>
+                                <li>
+                                    <label class="form-key">报表名称</label>
+                                    <div class="form-value">
+                                        <input type="text" v-model="reportData.caption"/>
+                                    </div>
+                                </li>
+                                <li>
+                                    <label class="form-key">表单标志</label>
+                                    <div class="form-value">
+                                        <input type="text" v-model="reportData.formKey"/>
+                                    </div>
+                                </li>
+                                <li>
+                                    <label class="form-key">报表组</label>
+                                    <div class="form-value">
+                                        <input type="text" v-model="reportData.group"/>
+                                    </div>
+                                </li>
+                                <li>
+                                    <label class="form-key" title="是表单中默认模板">是表单中默认模板</label>
+                                    <div class="form-value">
+                                        <select v-model="reportData.default">
+                                            <option value="true">是</option>
+                                            <option value="false">否</option>
+                                        </select>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="reportResult" v-show="dialog.dialogShow && dialog.dialogIndex==3" style="display: none;">
+                    <pre>{{JSON.stringify(this.reportData, null, 4)}}</pre>
+                </div>
+            </div>
+            <a @click="dialog.dialogShow = !dialog.dialogShow" title="关闭" class="close">X</a>
+        </div>
+    </div>
+</div>
+</div>
+<script src="../static/js/3rd/jquery/dist/jquery.js"></script>
+<script src="../static/js/vue/dist/vue.js"></script>
+<script src="../static/js/3rd/jexcel-master/dist/jexcel.js"></script>
+<script src="../static/js/3rd/jsuites-master/dist/jsuites.js"></script>
+<script src="../static/js/3rd/colorpicker-1.9.62/dist/colorpicker.js"></script>
+<script type="text/javascript">
+    (function () {
+
+        //枚举数据
+        const cellContentType = {0: {name: 'text', text: '文本'}, 1: {name: 'image', text: '图片'}};//单元格类型
+        const gridType = {0: '页眉', 1: '段落', 2: '表格', 3: '页尾'};//段类型
+        const vAlignType = {0: 'left', 1: 'center', 2: 'right'}; //对其方式
+        const hAlignType = {0: 'top', 1: 'middle', 2: 'bottom'}; //对其方式
+        //纸张类型
+        const paperType = {
+            'A0': ["841×1189 MM", 2384, 3370],
+            'A1': ["594×841 MM", 1648, 2384],
+            'A2': ["420×594 MM", 1191, 1648],
+            'A3': ["297×420 MM", 842, 1191],
+            'A4': ["210×297 MM", 595, 842],
+            'A5': ["148×210 MM", 420, 595],
+            'A6': ["105×148 MM", 298, 420],
+            'Designated Long': ["110×220 MM", 312, 624],
+            'Letter': ["8.5×11 INCH", 612, 792],
+            'Legal': ["8.4×14 INCH", 605, 1008]
+        };
+
+        new Vue({
+            el: '#report-tpl',
+            data() {
+                return {
+                    reportData: {}, //报表数据
+                    currentJexcl: null,  //暂存当前focus的jExcel对象，有且仅有一个jExcelObj[index]
+                    currentGrid: null,  //暂存当前focus的表格对象elementArray[index]
+                    currentCells: null,  //暂存当前选中的单元格两个点  {c1: [cellName1, x1, y1],c2: [cellName2, x2, y2],};
+                    currentCellsElement: [],//暂存当前选中的单元格  [elementObj,elementObj];
+                    dialog: {dialogShow: false, dialogIndex: 0}, //弹窗相关
+                    tab: {tabIndex: 0, celltabIndex: 0},  //tab相关
+                    paperType: paperType,//纸张类型A4 A6 ...
+                    paperSizeCustom: false, //是否自定义纸张
+                    pubAllClass: {}, //暂存所有初始类 [grid:{},row{},cell{},display:{},font:{}...]
+                    dicData: {}, //暂存字典数据
+                    cellDataCurrentRowIndex: -1, //暂存单元格/数值格式/当前列表项的行号
+                    cellBorder: {currentBorderStyle: 0,currentBorderColor: '',currentBorderType: 0},
+                    windowHeight: $(window).height()
+                }
+            },
+
+            methods: {
+                //获取报表数据
+                _getReportData() {
+                    let _this = this;
+                    $.get("/static/report.json", function (result) {
+                        _this._initReportData(result);
+                    });
+                    $.get("/static/dic.json", function (result) {
+                        _this.dicData = result[0];
+                    });
+                },
+                //初始化报表数据
+                _initReportData(reportData) {
+                    let _this = this;
+                    $.get("/static/pubAllClass.json", function (result) {
+                        _this.pubAllClass = result;
+                        reportData.grid.elementArray.forEach(function (grid, index1) {
+                            grid.rows.elementArray.forEach(function (row, index2) {
+                                row.elementArray.forEach(function (cell, index3) {
+                                    //为了方便数据绑定，对单元格padding进行特殊处理:如果单元格的padding:'' -->[0,0,0,0];如果单元格padding:'1,2,3,4'-->[1,2,3,4]
+                                    cell.padding = cell.padding == '' ? [0,0,0,0] : cell.padding.split(',');
+
+                                    cell.display = cell.display || JSON.parse(JSON.stringify(_this.pubAllClass.Display));
+                                    cell.display.border = cell.display.border || JSON.parse(JSON.stringify(_this.pubAllClass.Border));
+                                    cell.display.font = cell.display.font || JSON.parse(JSON.stringify(_this.pubAllClass.Font));
+                                    cell.display.imageStyle = cell.display.imageStyle || JSON.parse(JSON.stringify(_this.pubAllClass.ImageStyle));
+                                    cell.display.format = cell.display.format || JSON.parse(JSON.stringify(_this.pubAllClass.Format));
+                                    cell.display.format.listItems = cell.display.format.listItems || [];
+                                    cell.textNode = cell.textNode || JSON.parse(JSON.stringify(_this.pubAllClass.CellText));
+
+                                    //解决json数据中有的单元格有text属性，但是却没有textNode属性时，textNode.content为空的问题；
+                                    cell.textNode.content = cell.textNode.content || cell.text;
+                                });
+                            });
+                        });
+                        _this.reportData = reportData;
+                        _this.paperSizeCustom = _this.reportData.paperID == 'Custom';
+                        _this._initJExcel();
+                    });
+                },
+                _showDialog(index) {
+                    this.dialog.dialogIndex = index;
+                    this.dialog.dialogShow = true;
+                },
+                _showNewReportData(){
+                    //还原单元格的padding值
+                    this.reportData.grid.elementArray.forEach(function (grid) {
+                        grid.rows.elementArray.forEach(function (row) {
+                            row.elementArray.forEach(function (cell) {
+                                //padding:[0,0,0,0] --> '0,0,0,0';padding:[1,2,3,4] --> '1,2,3,4'
+                                if(typeof(cell.padding) != 'string'){ //如果padding不为字符串则将其变成字符串
+                                    cell.padding.forEach(function (p) {
+                                        p = p=='' ? 0: p;     //[0, 0, '', 0] --> [0, 0, 0, 0]
+                                    })
+                                    cell.padding = cell.padding.join(',');  //padding:[1,2,3,4] --> '1,2,3,4'
+                                }
+                            })
+                        })
+                    });
+                    console.log('最新数据：');
+                    console.log(this.reportData);
+                    this._showDialog(3);
+                },
+                _changeTab(index) {
+                    this.tab.tabIndex = index;
+                },
+                _changeCellTab(index) {
+                    this.tab.celltabIndex = index;
+                },
+                //切换单元格数值类型
+                _changeCellDataType(index) {
+                    let _this = this;
+                    _this.currentCellsElement.forEach(function (cell) {
+                        cell.cellEle.display.format.dataType = index;
+                        //切换数值类型时，置空其它各字段的值
+                        cell.cellEle.display.format.listItems = [];
+                        cell.cellEle.display.format.formatString =
+                            cell.cellEle.display.format.transformer =
+                                cell.cellEle.display.format.fieldKeys =
+                                    cell.cellEle.display.format.itemKey = '';
+                    });
+                },
+                //重置纸张大小
+                _resetPaperSize() {
+                    let size = this.paperType[this.reportData.paperID];
+                    this.reportData.pageWidth = size[1];
+                    this.reportData.pageHeight = size[2];
+
+                    //获取纸张大小
+                    let paperSize = size[0].split(' ')[0].split('×');  //'420×594 MM' --> ['420','594'];
+                    this.reportData.paperWidth = parseInt(paperSize[0]);
+                    this.reportData.paperHeight = parseInt(paperSize[1]);
+                },
+                //切换纸张类型
+                _changePaperType() {
+                    this._resetPaperSize();
+                },
+                //设置成自定义 纸张大小
+                _setPaperCustom() {
+                    this.reportData.paperID = this.reportData.pageID = "Custom";
+                    this.paperSizeCustom = true;
+                },
+                //设置成非自定义 纸张大小，默认A4纸
+                _setPaperNotCustom() {
+                    this.reportData.paperID = this.reportData.pageID = "A4";
+                    this._resetPaperSize();
+                    this.paperSizeCustom = false;
+                },
+                //创建单元格
+                _createNewCell(){
+                    let newCell = JSON.parse(JSON.stringify(this.pubAllClass.Cell));
+                    newCell.display = JSON.parse(JSON.stringify(this.pubAllClass.Display));
+                    newCell.display.border = JSON.parse(JSON.stringify(this.pubAllClass.Border));
+                    newCell.display.font = JSON.parse(JSON.stringify(this.pubAllClass.Font));
+                    newCell.display.imageStyle = JSON.parse(JSON.stringify(this.pubAllClass.ImageStyle));
+                    newCell.display.format = JSON.parse(JSON.stringify(this.pubAllClass.Format));
+                    newCell.display.format.listItems = [];
+                    newCell.textNode = JSON.parse(JSON.stringify(this.pubAllClass.CellText));
+                    newCell.padding = newCell.padding == '' ? [0,0,0,0] : newCell.padding.split(',');
+                    return newCell;
+                },
+                //插入行 position:当前第几行，b:true前、false后；
+                _myInsertedRow(position, b) {
+                    if (this.currentJexcl && this.currentCells) {
+                        this.currentJexcl.insertRow([], position, b);
+                        let newRowElement = JSON.parse(JSON.stringify(this.pubAllClass.Row));
+                        newRowElement.elementArray = [];
+                        let colsLength = this.currentGrid.columns.elementArray.length; //计算当前grid有多少列
+                        for (let i = 0; i < colsLength; i++) {
+                            newRowElement.elementArray.push(this._createNewCell());
+                        }
+                        this.currentGrid.rows.elementArray.splice(b ? position : position + 1, 0, newRowElement); //区分前插入与后插入
+                    } else {
+                        alert("请选择您要插入的位置！")
+                    }
+                },
+                //插入列 position:当前第几列，b:true前、false后；
+                _myInsertedColumn(position, b) {
+                    if (this.currentJexcl && this.currentCells) {
+                        this.currentJexcl.insertColumn([], position, b, []);
+                        this.currentGrid.columns.elementArray.splice(b ? position : position + 1, 0, JSON.parse(JSON.stringify(this.pubAllClass.Column)));
+                        let rowLength = this.currentGrid.rows.elementArray.length; //计算当前grid有多少行
+                        for (let i = 0; i < rowLength; i++) {
+                            let newCell = this._createNewCell();
+                            this.currentGrid.rows.elementArray[i].elementArray.splice(b ? position : position + 1, 0, newCell);
+                        }
+                    } else {
+                        alert("请选择您要插入的位置！")
+                    }
+                },
+                //移除指定行；
+                _myRemoveRow() {
+                    if (this.currentJexcl && this.currentCells) {
+                        let startRowIndex = this.currentCells.c1[2],
+                            endRowIndex = this.currentCells.c2[2],
+                            rowsNum = endRowIndex - startRowIndex + 1;
+                        if (this.currentJexcl.rows.length > 1) {
+                            this.currentJexcl.deleteRow(startRowIndex, rowsNum);
+                            this.currentGrid.rows.elementArray.splice(startRowIndex, rowsNum);
+                        } else {
+                            alert("小于或等于一行数据，不允许删除！");
+                        }
+                    } else {
+                        alert("请选择您要删除的行！")
+                    }
+                },
+                //移除指定列；
+                _myRemoveColumn() {
+                    if (this.currentJexcl && this.currentCells) {
+                        let startColumnIndex = this.currentCells.c1[1],
+                            endColumnIndex = this.currentCells.c2[1],
+                            colsNum = endColumnIndex - startColumnIndex + 1;
+                        if (this.currentJexcl.colgroup.length > 1) {
+                            this.currentJexcl.deleteColumn(startColumnIndex, colsNum);
+                            this.currentGrid.columns.elementArray.splice(startColumnIndex, colsNum);
+                            let rowLength = this.currentGrid.rows.elementArray.length; //计算当前grid有多少列
+                            for (let i = 0; i < rowLength; i++) {
+                                this.currentGrid.rows.elementArray[i].elementArray.splice(startColumnIndex, colsNum);
+                            }
+                        } else {
+                            alert("小于或等于一列数据，不允许删除！");
+                        }
+                    } else {
+                        alert("请选择您要删除的列！")
+                    }
+
+                },
+                //合并
+                _myMergeCells() {
+                    if (this.currentJexcl && this.currentCells) {
+                        let currentCells = this.currentCells,
+                            colLength = currentCells.c2[1] - currentCells.c1[1] + 1,
+                            rowLength = currentCells.c2[2] - currentCells.c1[2] + 1;
+
+                        let hasTxtNum = 0; //暂存有多少个单元格有内容
+                        this.currentCellsElement.forEach(function (cell) {
+                            if(cell.cellEle.text){
+                                hasTxtNum++
+                            }
+                        });
+                        if(hasTxtNum <= 1){ //判断是否能合并
+                            this.currentJexcl.setMerge(currentCells.c1[0], colLength, rowLength);
+                            for (let i = 0; i < rowLength; i++) {
+                                for (let j = 0; j < colLength; j++) {
+                                    let cell = this.currentGrid.rows.elementArray[currentCells.c1[2] + i].elementArray[currentCells.c1[1] + j];
+                                    cell.merged = cell.isMerged = true;
+                                    if (i == 0 && j == 0) {  //如果是合并项里的第一个单元格则定义其mergedHead=true
+                                        cell.mergedHead = cell.isMergedHead = true;
+                                        cell.mergedColumnSpan = colLength;
+                                        cell.mergedRowSpan = rowLength;
+                                    } else {
+                                        cell.mergedColumnSpan = j;
+                                        cell.mergedRowSpan = i;
+                                    }
+                                }
+                            }
+                        }else{
+                            alert("您选中的单元格不允许合并！");
+                        }
+                    } else {
+                        alert("请选择您要合并的单元格！")
+                    }
+                },
+                //拆分
+                _myRemoveMerge() {
+                    let currentCells = this.currentCells;
+                    if (this.currentJexcl && currentCells) {
+                        this.currentJexcl.removeMerge(currentCells.c1[0]);
+                        let firstCell = this.currentGrid.rows.elementArray[currentCells.c1[2]].elementArray[currentCells.c1[1]];
+                        if (firstCell.mergedHead && firstCell.isMergedHead) {
+                            let colLength = currentCells.c2[1] - currentCells.c1[1] + 1,
+                                rowLength = currentCells.c2[2] - currentCells.c1[2] + 1;
+                            for (let i = 0; i < rowLength; i++) {
+                                for (let j = 0; j < colLength; j++) {
+                                    let cell = this.currentGrid.rows.elementArray[currentCells.c1[2] + i].elementArray[currentCells.c1[1] + j];
+                                    cell.merged = cell.isMerged = cell.mergedHead = cell.isMergedHead = false;
+                                    cell.mergedColumnSpan = cell.mergedRowSpan = 0;
+                                }
+                            }
+                        } else {
+                            alert("您选中的单元格没有合并过，不可拆分！");
+                        }
+                    } else {
+                        alert("请选择您要拆分的单元格！")
+                    }
+                },
+                //插入段 rows行，cols列，b:true前、false后；
+                _myInsertedGrid(rows, cols, b) {
+                        let newSectionElement = JSON.parse(JSON.stringify(this.pubAllClass.Section));
+                        newSectionElement.columns = JSON.parse(JSON.stringify(this.pubAllClass.Columns));
+                        newSectionElement.rows = JSON.parse(JSON.stringify(this.pubAllClass.Rows));
+                        newSectionElement.columns.elementArray = [];
+                        newSectionElement.rows.elementArray = [];
+                        for (let j = 0; j < cols; j++) {
+                            newSectionElement.columns.elementArray.push(JSON.parse(JSON.stringify(this.pubAllClass.Column)));
+                        }
+                        for (let i = 0; i < rows; i++) {
+                            newSectionElement.rows.elementArray.push(JSON.parse(JSON.stringify(this.pubAllClass.Row)));
+                            newSectionElement.rows.elementArray[i].elementArray = [];
+                            for (let j = 0; j < cols; j++) {
+                                newSectionElement.rows.elementArray[i].elementArray.push(this._createNewCell());
+                            }
+                        }
+                       if(this.currentJexcl && this.currentCells){
+                        let position = this.reportData.grid.elementArray.indexOf(this.currentGrid);
+                        this.reportData.grid.elementArray.splice(b ? position : position + 1, 0, newSectionElement); //区分前插入与后插入
+                        }else{
+                            this.reportData.grid.elementArray.splice(b ? 0 : this.reportData.grid.elementArray.length, 0, newSectionElement); //区分前插入与后插入
+                        }
+                        this._initJExcel();
+                },
+                //移除段；
+                _myRemoveGrid() {
+                    if (this.currentJexcl && this.currentCells) {
+                        let position = this.reportData.grid.elementArray.indexOf(this.currentGrid);
+                        if (this.reportData.grid.elementArray.length > 1) {
+                            this.reportData.grid.elementArray.splice(position, 1);
+                            this._initJExcel();
+                        } else {
+                            alert("小于或等于一个段落，不允许删除！");
+                        }
+
+                    } else {
+                        alert("请选择您要删除的段！")
+                    }
+
+                },
+                _getColor(color) { //"backColor": "0xe64d4dff"此类数据需要处理去掉前两个字母0x
+                    return (color && color.substring(0, 2) == "0x") ? '#' + color.substring(2) : color; //判断颜色值是否'0x'开头
+                },
+                _getBorderStyle(position, borderType, borderColor) {
+                    switch (borderType) {
+                        case 0: //无
+                            return '';
+                            break;
+                        case 1: //实线
+                            return 'border-' + position + ':1px solid ' + borderColor + ';';
+                            break;
+                        case 2: //虚线
+                            return 'border-' + position + ':1px dotted ' + borderColor + ';';
+                            break;
+                        case 3: //粗线
+                            return 'border-' + position + ':2px solid ' + borderColor + ';';
+                            break;
+                    }
+                },
+                //初始化jExcel
+                _initJExcel() { 
+                    let _this = this;
+                    let $container = $(".report-container .paper");
+                    $container.html("");
+                    let jExcelObj = [];
+
+                    _this.reportData.grid.elementArray.forEach(function (grid, index) {
+                        let className = "report-item-" + index;
+                        $container.append("<div class='" + className + "'><h2>" + gridType[grid.type] + "</h2><div class='innerContent' id='jexcel-" + index + "'></div></div>");
+                        let jExcelCallbacks = {
+                            "_getJExcelDatas": function (elementArray) {
+                                let data = [];
+                                elementArray.forEach(function (itemX, indexX) {
+                                    data[indexX] = [];
+                                    itemX.elementArray.forEach(function (itemY, indexY) {
+                                        data[indexX][indexY] = itemY.text;
+                                    });
+                                });
+                                return data;
+                            },
+                            "_getJExcelColumns": function (elementArray) {
+                                let columns = [];
+                                elementArray.forEach(function (item, index) {
+                                    //columns[index]={type:cellContentType[item.type].name,width:item.width,title:'Model',readOnly:true};
+                                    columns[index] = {type: cellContentType[item.type].name, width: item.width};
+                                });
+                                return columns;
+                            },
+                            "_getJExcelStyle": function (elementArray) {
+                                let style = {};
+                                elementArray.forEach(function (itemX, indexX) {
+                                    itemX.elementArray.forEach(function (itemY, indexY) {
+                                        let cellName = jexcel.getColumnNameFromId([indexY, indexX]);
+                                        let styleStr = "";
+                                        if (itemX.backColor) {
+                                            styleStr += 'background-color: ' +  _this._getColor(itemX.backColor) + ';';
+                                        }
+                                        if (itemY.display) {
+                                            let display = itemY.display;
+                                            styleStr += _this._getBorderStyle('left', display.border.leftStyle, _this._getColor(display.border.leftColor));
+                                            styleStr += _this._getBorderStyle('right', display.border.rightStyle, _this._getColor(display.border.rightColor));
+                                            styleStr += _this._getBorderStyle('top', display.border.topStyle, _this._getColor(display.border.topColor));
+                                            styleStr += _this._getBorderStyle('bottom', display.border.bottomStyle, _this._getColor(display.border.bottomColor));
+
+                                            styleStr += 'margin:' + display.margin + 'px;text-align:' + hAlignType[display.hAlign] + ';vertical-align:' + vAlignType[display.vAlign] + ';';
+                                            styleStr += display.foreColor ? 'color:' + _this._getColor(display.foreColor) + ';' : '';
+                                            styleStr += display.backColor ? 'background:' + _this._getColor(display.backColor) + ';' : '';
+                                            styleStr += display.font.bold ? 'font-weight: 700;' : 'font-weight: 500;';
+                                            styleStr += display.font.italic ? 'font-style: italic;' : 'font-weight: normal;';
+                                        }
+                                        style[cellName] = styleStr;
+                                    });
+                                });
+                                return style;
+                            },
+                            "_getJExcelMergeCells": function (elementArray) {
+                                let mergeCells = {};
+                                elementArray.forEach(function (itemX, indexX) {
+                                    itemX.elementArray.forEach(function (itemY, indexY) {
+                                        if (itemY.merged && itemY.mergedColumnSpan && itemY.mergedRowSpan) { //merged为true,且合并的行与列都不为0(为0时表示被合并的单元格，不显示也不处理)
+                                            let cellName = jexcel.getColumnNameFromId([indexY, indexX]);
+                                            mergeCells[cellName] = [itemY.mergedColumnSpan, itemY.mergedRowSpan];
+                                        }
+                                    });
+                                });
+                                return mergeCells;
+                            },
+                            "changed": function (instance, cell, x, y, value) {
+                                let cellName = jexcel.getColumnNameFromId([x, y]);
+                                console.log('New change on cell ' + cellName + ' to: ' + value + '');
+                                if (_this.currentJexcl) {
+                                    _this.currentCellsElement[0].cellEle.text =
+                                        _this.currentCellsElement[0].cellEle.caption =
+                                            _this.currentCellsElement[0].cellEle.textNode.content = value;
+                                }
+                            },
+                            "beforeChange": function (instance, cell, x, y, value) {
+                                let cellName = jexcel.getColumnNameFromId([x, y]);
+                                console.log('The cell ' + cellName + ' will be changed');
+                            },
+                            "insertedRow": function (instance) {
+                                console.log('Row added');
+                            },
+                            "insertedColumn": function (instance) {
+                                console.log('Column added');
+                            },
+                            "deletedRow": function (instance) {
+                                console.log('Row deleted');
+                            },
+                            "deletedColumn": function (instance) {
+                                console.log('Column deleted');
+                            },
+                            "sort": function (instance, cellNum, order) {
+                                var order = (order) ? 'desc' : 'asc';
+                                console.log('The column  ' + cellNum + ' sorted by ' + order + '');
+                            },
+                            "resizeColumn": function (instance, cell, width) {
+                                console.log('The column  ' + cell + ' resized to width ' + width + ' px');
+                                if (_this.currentJexcl) {
+                                    _this.currentGrid.columns.elementArray[cell].width = width;
+                                }
+                            },
+                            "resizeRow": function (instance, cell, height) {
+                                console.log('The row  ' + cell + ' resized to height ' + height + ' px');
+                                if (_this.currentJexcl) {
+                                    _this.currentGrid.rows.elementArray[cell].height = height;
+                                }
+                            },
+                            "selectionActive": function (instance, x1, y1, x2, y2, origin) {
+                                let gridId = $(instance).prop('id'),
+                                    index = parseInt(gridId.substring((gridId.lastIndexOf("\-")) + 1, gridId.length));
+                                _this.currentJexcl = jExcelObj[index];
+                                _this.currentGrid = _this.reportData.grid.elementArray[index];
+
+                                let cellName1 = jexcel.getColumnNameFromId([x1, y1]),
+                                    cellName2 = jexcel.getColumnNameFromId([x2, y2]);
+                                console.log('The selection from ' + cellName1 + ' to ' + cellName2 + '');
+                                _this.currentCells = {
+                                    c1: [cellName1, x1, y1],
+                                    c2: [cellName2, x2, y2],
+                                };
+                                //赋值currentCellsElement[ElementObj,ElementObj,ElementObj...]
+                                _this.currentCellsElement = [];
+                                for (let i = 0; i <= y2 - y1; i++) {
+                                    for (let j = 0; j <= x2 - x1; j++) {
+                                        _this.currentCellsElement.push({
+                                            'name': jexcel.getColumnNameFromId([x1 + j, y1 + i]),
+                                            'cellEle': _this.currentGrid.rows.elementArray[y1 + i].elementArray[x1 + j]
+                                        });
+                                    }
+                                }
+                                $("input[data-tip='backColor']").css("background-color", _this._getColor(_this.currentCellsElement[0].cellEle.display.backColor));
+                                $("input[data-tip='foreColor']").css("background-color", _this._getColor(_this.currentCellsElement[0].cellEle.display.font.foreColor));
+                                $("input[data-tip='rowBackColor']").css("background-color", _this._getColor(_this.currentGrid.rows.elementArray[_this.currentCells.c1[2]].backColor));
+                                _this.cellBorder.currentBorderColor = '';
+                                _this.cellBorder.currentBorderStyle = '0';
+                                _this.cellBorder.currentBorderType = '0';
+                                console.log(_this.currentCellsElement);
+                            },
+                            "loaded": function (instance) {
+                                console.log('New data is loaded');
+                            },
+                            "moveRow": function (instance, from, to) {
+                                console.log('The row ' + from + ' was move to the position of ' + to + '');
+                            },
+                            "moveColumn": function (instance, from, to) {
+                                console.log('The col ' + from + ' was move to the position of ' + to + '');
+                            },
+                            "focus": function (instance) {
+                                console.log('The table ' + $(instance).prop('id') + ' is focus');
+                                let gridId = $(instance).prop('id'),
+                                    index = parseInt(gridId.substring((gridId.lastIndexOf("\-")) + 1, gridId.length));
+                                _this.currentJexcl = jExcelObj[index];
+                                _this.currentGrid = _this.reportData.grid.elementArray[index];
+                            },
+                            "blur": function (instance) {
+                                console.log('The table ' + $(instance).prop('id') + ' is blur');
+                                let that = this;
+                                console.log(that);
+                                console.log(instance);
+                            },
+                            "merge": function (instance) {
+                                console.log('The table ' + $(instance).prop('id') + ' is merged');
+                            },
+                            "updateTable": function (instance, cell, col, row, val, label, cellName) {
+                                //数值格式化在这里
+                                //if (row % 2) {
+                                //  cell.style.backgroundColor = '#ff0000';
+                                //}
+                            },
+                        };
+                        jExcelObj[index] = jexcel($("." + className + " .innerContent")[0], {
+                            data: jExcelCallbacks._getJExcelDatas(grid.rows.elementArray),
+                            columns: jExcelCallbacks._getJExcelColumns(grid.columns.elementArray),
+                            rowResize: true,
+                            style: jExcelCallbacks._getJExcelStyle(grid.rows.elementArray),
+                            mergeCells: jExcelCallbacks._getJExcelMergeCells(grid.rows.elementArray),
+                            //minDimensions: section.mData.minDimensions,
+                            onchange: jExcelCallbacks.changed,
+                            onbeforechange: jExcelCallbacks.beforeChange,
+                            oninsertrow: jExcelCallbacks.insertedRow,
+                            oninsertcolumn: jExcelCallbacks.insertedColumn,
+                            ondeleterow: jExcelCallbacks.deletedRow,
+                            ondeletecolumn: jExcelCallbacks.deletedColumn,
+                            onselection: jExcelCallbacks.selectionActive,
+                            onsort: jExcelCallbacks.sort,
+                            onresizerow: jExcelCallbacks.resizeRow,
+                            onresizecolumn: jExcelCallbacks.resizeColumn,
+                            onmerge: jExcelCallbacks.merge,
+                            onmoverow: jExcelCallbacks.moveRow,
+                            onmovecolumn: jExcelCallbacks.moveColumn,
+                            onload: jExcelCallbacks.loaded,
+                            onblur: jExcelCallbacks.blur,
+                            onfocus: jExcelCallbacks.focus,
+                            updateTable: jExcelCallbacks.updateTable,
+                            contextMenu: function (obj, x, y, e) {
+                                return [];
+                            }
+                        });
+
+                    });
+                    Object.assign(_this, {jExcelObj}); // tucks all methods under jExcelObj object in component instance
+                },
+                //初始化颜色选择器
+                _initColorPicker(e) {
+                    let _this = this,
+                        $input = $(e.target),
+                        $container = $(e.target).siblings(".color-picker");
+                    $container.html("");
+                    let Color = EasyLogicColorPicker.Color;
+                    let colorPicker = EasyLogicColorPicker.create({
+                        type: "sketch",
+                        position: "inline",
+                        container: $container[0],
+                        color: $input.val(),
+                        onChange: function (c) {
+                            let textColor = Color.format(Color.c(Color.parse(c)), 'hex');
+                            $input.val(c).css({"background-color": c, "color": textColor});
+                            //选择颜色后，更新reporData，重新渲染jExcell
+                            switch ($input.data("tip")) {
+                                case 'foreColor':  //前景色
+                                    _this.currentCellsElement.forEach(function (cell) {
+                                        if(_this.currentJexcl.getValue(cell.name)){//如果单元格text存在则执行操作(解决被合并'吃'掉的单元格不存在text产生异常)
+                                            cell.cellEle.display.foreColor = c;
+                                            _this.currentJexcl.setStyle(cell.name, 'color', c);
+                                        }
+                                    });
+                                    break;
+                                case 'backColor':   //背景色
+                                    _this.currentCellsElement.forEach(function (cell) {
+                                        cell.cellEle.display.backColor = c;
+                                        _this.currentJexcl.setStyle(cell.name, 'background-color', c);
+                                    });
+                                    break;
+                                case 'rowBackColor':   //行背景色
+                                    let rowsLength = _this.currentCells.c2[2] - _this.currentCells.c1[2] + 1;
+                                    for (let i = 0; i < rowsLength; i++) {
+                                        _this.currentGrid.rows.elementArray[_this.currentCells.c1[2]+i].backColor = c;
+                                        for (let j = 0; j < _this.currentGrid.rows.elementArray[0].elementArray.length; j++) {
+                                            let name = jexcel.getColumnNameFromId([j, _this.currentCells.c1[2]+i]);
+                                            _this.currentJexcl.setStyle(name, 'background-color', c);
+                                        }
+                                    }
+                                    break;
+                                default:    //边框色
+                                    _this.cellBorder.currentBorderColor = c;
+                                    _this._renderCellsBorder();
+                            }
+                        }
+                    });
+                    $container.show().mouseleave(function () {
+                        //$input.val(colorPicker.getColor('hex')).css("backgroundColor", colorPicker.getColor('hex'));
+                        $container.hide();
+                        //_this._initJExcel();
+                    });
+                },
+
+                //渲染单个单元格边框置空
+                _renderCellBorderNone(cell,positions){
+                    let _this = this;
+                    if(positions.length){
+                        positions.forEach(function (position,index) {
+                            switch (position) {
+                                case 'left':
+                                    cell.cellEle.display.border.leftColor = '';
+                                    cell.cellEle.display.border.leftStyle = 0;
+                                    _this.currentJexcl.setStyle(cell.name, 'border-left', '1px solid #ccc');
+                                    break;
+                                case 'right':
+                                    cell.cellEle.display.border.rightColor = '';
+                                    cell.cellEle.display.border.rightStyle = 0;
+                                    _this.currentJexcl.setStyle(cell.name, 'border-right', '1px solid transparent');
+                                    break;
+                                case 'top':
+                                    cell.cellEle.display.border.topColor = '';
+                                    cell.cellEle.display.border.topStyle = 0;
+                                    _this.currentJexcl.setStyle(cell.name, 'border-top', '1px solid #ccc');
+                                    break;
+                                case 'bottom':
+                                    cell.cellEle.display.border.bottomColor = '';
+                                    cell.cellEle.display.border.bottomStyle = 0;
+                                    _this.currentJexcl.setStyle(cell.name, 'border-bottom', '1px solid transparent');
+                                    break;
+                            }
+                        });
+                    };
+                },
+                //渲染单个单元格边框
+                _renderCellBorder(cell,borderColor,positions,width,borderStyle){ //_renderCellBroder(cell,'red',['top','left'],'1px','solid');
+                    let _this = this;
+                    if(positions.length && width && borderStyle){
+                        positions.forEach(function (position,index) {
+                            _this.currentJexcl.setStyle(cell.name, 'border-'+position+'-style', borderStyle);
+                            _this.currentJexcl.setStyle(cell.name, 'border-'+position+'-width', width);
+                            _this.currentJexcl.setStyle(cell.name, 'border-'+position+'-color', borderColor);
+                            switch (position) {
+                                case 'left':
+                                    cell.cellEle.display.border.leftColor = borderColor;
+                                    if(borderStyle == 'dotted'){ //虚线
+                                        cell.cellEle.display.border.leftStyle = 2;
+                                    }else if(width == '2px'){ //粗线
+                                        cell.cellEle.display.border.leftStyle = 3;
+                                    }else{ //实线
+                                        cell.cellEle.display.border.leftStyle = 1;
+                                    }
+                                    break;
+                                case 'right':
+                                    cell.cellEle.display.border.rightColor = borderColor;
+                                    if(borderStyle == 'dotted'){ //虚线
+                                        cell.cellEle.display.border.rightStyle = 2;
+                                    }else if(width == '2px'){ //粗线
+                                        cell.cellEle.display.border.rightStyle = 3;
+                                    }else{ //实线
+                                        cell.cellEle.display.border.rightStyle = 1;
+                                    }
+                                    break;
+                                case 'top':
+                                    cell.cellEle.display.border.topColor = borderColor;
+                                    if(borderStyle == 'dotted'){ //虚线
+                                        cell.cellEle.display.border.topStyle = 2;
+                                    }else if(width == '2px'){ //粗线
+                                        cell.cellEle.display.border.topStyle = 3;
+                                    }else{ //实线
+                                        cell.cellEle.display.border.topStyle = 1;
+                                    }
+                                    break;
+                                case 'bottom':
+                                    cell.cellEle.display.border.bottomColor = borderColor;
+                                    if(borderStyle == 'dotted'){ //虚线
+                                        cell.cellEle.display.border.bottomStyle = 2;
+                                    }else if(width == '2px'){ //粗线
+                                        cell.cellEle.display.border.bottomStyle = 3;
+                                    }else{ //实线
+                                        cell.cellEle.display.border.bottomStyle = 1;
+                                    }
+                                    break;
+                            }
+
+                        });
+                    }
+                },
+                //渲染选中的所有单元格边框
+                _renderCellsBorder(){
+                    let _this = this;
+                    let currentCells = _this.currentCells,
+                        colLength = currentCells.c2[1] - currentCells.c1[1] + 1,
+                        rowLength = currentCells.c2[2] - currentCells.c1[2] + 1,
+                        leftEdgeIndex = currentCells.c1[1] != 0 ? currentCells.c1[1]-1 : null, //最左边列号
+                        rightEdgeIndex = currentCells.c2[1] != _this.currentGrid.rows.elementArray[0].elementArray.length -1 ? currentCells.c2[1]+1 : null, //最右边列号
+                        topEdgeIndex = currentCells.c1[2] != 0 ? currentCells.c1[2]-1 : null, //最上边行号
+                        bottomEdgeIndex = currentCells.c2[2] != _this.currentGrid.rows.elementArray.length -1 ? currentCells.c2[2]+1 : null; //最下边行号
+                    let cell = {}, positions = [], width = '', borderStyle = '';
+                    switch (parseInt(_this.cellBorder.currentBorderStyle)) {
+                        case 1:  //实线
+                            width = '1px', borderStyle = 'solid';
+                            break;
+                        case 2:   //虚线
+                            width = '1px', borderStyle = 'dotted';
+                            break;
+                        case 3:   //粗线
+                            width = '2px', borderStyle = 'solid';
+                            break;
+                        case 0:   //无
+                            break;
+                    }
+                    for(let i=0; i<rowLength; i++){
+                        for(let j=0; j<colLength; j++){
+                            cell = {
+                                'name' : jexcel.getColumnNameFromId([currentCells.c1[1]+j, currentCells.c1[2]+i]),
+                                'cellEle' : _this.currentGrid.rows.elementArray[currentCells.c1[2]+i].elementArray[currentCells.c1[1]+j]
+                            };
+                            _this._renderCellBorderNone(cell, ['left','top','right','bottom']);
+                            switch (parseInt(_this.cellBorder.currentBorderType)) {
+                                case 0://全边框
+                                    positions = ['top','bottom','left','right'];
+                                    _this._renderCellBorder(cell, _this.cellBorder.currentBorderColor, positions, width, borderStyle);
+                                    break;
+                                case 1: //无边框
+                                    positions = ['top','bottom','left','right'];
+                                    _this._renderCellBorderNone(cell, positions);
+                                    break;
+                                case 7:
+                                    // 顶边框
+                                    _this._renderCellBorder(cell, _this.cellBorder.currentBorderColor, ['top'], width, borderStyle);
+                                    _this._renderCellBorderNone(cell, ['bottom','left','right']);
+                                    break;
+                                case 8:
+                                    // 右边框
+                                    _this._renderCellBorder(cell, _this.cellBorder.currentBorderColor, ['right'], width, borderStyle);
+                                    _this._renderCellBorderNone(cell, ['bottom','left','top']);
+                                    break;
+                                case 9:
+                                    // 底边框
+                                    _this._renderCellBorder(cell, _this.cellBorder.currentBorderColor, ['bottom'], width, borderStyle);
+                                    _this._renderCellBorderNone(cell, ['right','left','top']);
+                                    break;
+                                case 10:
+                                    // 左边框
+                                    _this._renderCellBorder(cell, _this.cellBorder.currentBorderColor, ['left'], width, borderStyle);
+                                    _this._renderCellBorderNone(cell, ['right','bottom','top']);
+                                    break;
+                                case 2:  // 全外边框
+                                    if(i == 0){ //第一行
+                                        if(j == 0){
+                                            _this._renderCellBorder(cell, _this.cellBorder.currentBorderColor, ['top','left'], width, borderStyle);
+                                            _this._renderCellBorderNone(cell, ['right','bottom']);
+                                        }else if(j == colLength-1){  //最后一列
+                                            _this._renderCellBorder(cell, _this.cellBorder.currentBorderColor, ['top','right'], width, borderStyle);
+                                            _this._renderCellBorderNone(cell, ['left','bottom']);
+                                        }else{
+                                            _this._renderCellBorder(cell, _this.cellBorder.currentBorderColor, ['top'], width, borderStyle);
+                                            _this._renderCellBorderNone(cell, ['right','left','bottom']);
+                                        }
+                                    }else if(i == rowLength - 1){ //最后一行
+                                        if(j == 0){
+                                            _this._renderCellBorder(cell, _this.cellBorder.currentBorderColor, ['bottom','left'], width, borderStyle);
+                                            _this._renderCellBorderNone(cell, ['right','top']);
+                                        }else if(j == colLength-1){  //最后一列
+                                            _this._renderCellBorder(cell, _this.cellBorder.currentBorderColor, ['bottom','right'], width, borderStyle);
+                                            _this._renderCellBorderNone(cell, ['left','top']);
+                                        }else{
+                                            _this._renderCellBorder(cell, _this.cellBorder.currentBorderColor, ['bottom'], width, borderStyle);
+                                            _this._renderCellBorderNone(cell, ['right','left','top']);
+                                        }
+                                    }else{
+                                        if(j==0){
+                                            _this._renderCellBorder(cell, _this.cellBorder.currentBorderColor, ['left'], width, borderStyle);
+                                            _this._renderCellBorderNone(cell, ['right','bottom','top']);
+                                        }else if(j == colLength - 1){
+                                            positions = ['right'];
+                                            _this._renderCellBorder(cell, _this.cellBorder.currentBorderColor, ['right'], width, borderStyle);
+                                            _this._renderCellBorderNone(cell, ['left','bottom','top']);
+                                        }
+                                    }
+
+                                    break;
+                                case 3:  // 顶外边框
+                                    if(i==0){
+                                        _this._renderCellBorder(cell, _this.cellBorder.currentBorderColor, ['top'], width, borderStyle);
+                                        _this._renderCellBorderNone(cell, ['right','bottom','left']);
+                                    }
+                                    break
+                                case 4:  // 右外边框
+                                    if(j==colLength-1){
+                                        _this._renderCellBorder(cell, _this.cellBorder.currentBorderColor, ['right'], width, borderStyle);
+                                        _this._renderCellBorderNone(cell, ['top','bottom','left']);
+                                    }
+                                    break
+                                case 5:  // 底外边框
+                                    if(i==rowLength-1){
+                                        _this._renderCellBorder(cell, _this.cellBorder.currentBorderColor, ['bottom'], width, borderStyle);
+                                        _this._renderCellBorderNone(cell, ['top','right','left']);
+                                    }
+                                    break
+                                case 6:  // 左外边框
+                                    if(j==0){
+                                        _this._renderCellBorder(cell, _this.cellBorder.currentBorderColor, ['left'], width, borderStyle);
+                                        _this._renderCellBorderNone(cell, ['top','right','bottom']);
+                                    }
+                                    break
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+
+                    //左右边缘
+                    for(let i=0; i<rowLength; i++){
+                        if(leftEdgeIndex != null){ //选中单元格的最左列的左边列
+                            cell = {
+                                'name' : jexcel.getColumnNameFromId([leftEdgeIndex, currentCells.c1[2]+i]),
+                                'cellEle' : _this.currentGrid.rows.elementArray[currentCells.c1[2]+i].elementArray[leftEdgeIndex]
+                            };
+                            _this._renderCellBorderNone(cell, ['left','top','right','bottom']);
+                            switch (parseInt(_this.cellBorder.currentBorderType)) {
+                                case 0:case 2:case 6:case 10:
+                                    //全边框 or 全外边框 or 左外边框 or 左边框
+                                    _this._renderCellBorder(cell, _this.cellBorder.currentBorderColor, ['right'], width, borderStyle);
+                                    _this._renderCellBorderNone(cell, ['top','left','bottom']);
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                        }
+                        if(rightEdgeIndex != null){//选中单元格的最右列的右边列
+                            cell = {
+                                'name' : jexcel.getColumnNameFromId([rightEdgeIndex, currentCells.c1[2]+i]),
+                                'cellEle' : _this.currentGrid.rows.elementArray[currentCells.c1[2]+i].elementArray[rightEdgeIndex]
+                            };
+                            _this._renderCellBorderNone(cell, ['left','top','right','bottom']);
+                            switch (parseInt(_this.cellBorder.currentBorderType)) {
+                                case 0:case 2:case 4:case 8:
+                                    //全边框 or 全外边框 or 右外边框 or 右边框
+                                    _this._renderCellBorder(cell, _this.cellBorder.currentBorderColor, ['left'], width, borderStyle);
+                                    _this._renderCellBorderNone(cell, ['top','right','bottom']);
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                    //上下边缘
+                    for(let j=0; j<colLength; j++){
+                        if(topEdgeIndex != null){ //选中单元格的最上边行的的上边行
+                            cell = {
+                                'name' : jexcel.getColumnNameFromId([currentCells.c1[1]+j, topEdgeIndex]),
+                                'cellEle' : _this.currentGrid.rows.elementArray[topEdgeIndex].elementArray[currentCells.c1[1]+j]
+                            };
+                            _this._renderCellBorderNone(cell, ['left','top','right','bottom']);
+                            switch (parseInt(_this.cellBorder.currentBorderType)) {
+                                case 0:case 2:case 3:case 7:
+                                    //全边框 or 全外边框 or 顶外边框 or 顶边框
+                                    _this._renderCellBorder(cell, _this.cellBorder.currentBorderColor, ['bottom'], width, borderStyle);
+                                    _this._renderCellBorderNone(cell, ['top','right','left']);
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                        }
+                        if(bottomEdgeIndex != null){//选中单元格的最下边行的下边行
+                            cell = {
+                                'name' : jexcel.getColumnNameFromId([currentCells.c1[1]+j, bottomEdgeIndex]),
+                                'cellEle' : _this.currentGrid.rows.elementArray[bottomEdgeIndex].elementArray[currentCells.c1[1]+j]
+                            };
+                            _this._renderCellBorderNone(cell, ['left','top','right','bottom']);
+                            switch (parseInt(_this.cellBorder.currentBorderType)) {
+                                case 0:case 2:case 5:case 9:
+                                    //全边框 or 全外边框 or 底外边框 or 底边框
+                                    _this._renderCellBorder(cell, _this.cellBorder.currentBorderColor, ['top'], width, borderStyle);
+                                    _this._renderCellBorderNone(cell, ['bottom','right','left']);
+                                    break;
+                                default:
+                                    break
+                            }
+                        }
+                    }
+                },
+                //设置字体相关
+                _setCellFont(fontv) {
+                    let _this = this;
+                    _this.currentCellsElement.forEach(function (cell) {
+                        if(fontv == 'text'){
+                            cell.cellEle.text =
+                                cell.cellEle.caption =
+                                    cell.cellEle.textNode.content = cell.cellEle.text;
+                            _this.currentJexcl.setValue(cell.name, cell.cellEle.text);
+                        }
+                        else if(_this.currentJexcl.getValue(cell.name)){//如果单元格text存在则执行操作(解决被合并'吃'掉的单元格不存在text产生异常)
+                            switch (fontv) {
+                                case 'h-left': //水平对齐：left
+                                    _this.currentJexcl.setStyle(cell.name, 'text-align', 'left');
+                                    cell.cellEle.display.hAlign = 0;
+                                    break;
+                                case 'h-center': //水平对齐：center
+                                    _this.currentJexcl.setStyle(cell.name, 'text-align', 'center');
+                                    cell.cellEle.display.hAlign = 1;
+                                    break;
+                                case 'h-right': //水平对齐：right
+                                    _this.currentJexcl.setStyle(cell.name, 'text-align', 'right');
+                                    cell.cellEle.display.hAlign = 2;
+                                    break;
+                                case 'v-top': //垂直对齐：top
+                                    _this.currentJexcl.setStyle(cell.name, 'vertical-align', 'top');
+                                    cell.cellEle.display.vAlign = 0;
+                                    break;
+                                case 'v-middle': //垂直对齐：middle
+                                    _this.currentJexcl.setStyle(cell.name, 'vertical-align', 'middle');
+                                    cell.cellEle.display.vAlign = 1;
+                                    break;
+                                case 'v-bottom': //垂直对齐：bottom
+                                    _this.currentJexcl.setStyle(cell.name, 'vertical-align', 'bottom');
+                                    cell.cellEle.display.vAlign = 2;
+                                    break;
+                                case 'family': //字体
+                                    _this.currentJexcl.setStyle(cell.name, 'font-family', cell.cellEle.display.font.name);
+                                    break;
+                                case 'size': //字体大小
+                                    _this.currentJexcl.setStyle(cell.name, 'font-size', cell.cellEle.display.font.size + 'px');
+                                    break;
+                                case 'bold': //字体是否加粗
+                                    cell.cellEle.display.font.bold = !cell.cellEle.display.font.bold;
+                                    _this.currentJexcl.setStyle(cell.name, 'font-weight', (cell.cellEle.display.font.bold ? '700' : '500'));
+                                    break;
+                                case 'italic': //字体是否倾斜
+                                    cell.cellEle.display.font.italic = !cell.cellEle.display.font.italic;
+                                    _this.currentJexcl.setStyle(cell.name, 'font-style', (cell.cellEle.display.font.italic ? 'italic' : 'normal'));
+                                    break;
+                            }
+                        }
+                    });
+                },
+                //设置列宽 or 行高
+                _setRowOrCol(v) {
+                    let _this = this;
+                    switch (v) {
+                        case 'col-width': //列宽
+                            let colsNum = _this.currentCells.c2[1] - _this.currentCells.c1[1] + 1;
+                            for (let i = 0; i < colsNum; i++) {
+                                let width = _this.currentGrid.columns.elementArray[_this.currentCells.c1[1]].width;
+                                _this.currentGrid.columns.elementArray[_this.currentCells.c1[1] + i].width = width;
+                                _this.currentJexcl.setWidth(_this.currentCells.c1[1] + i, width);
+                            }
+                            break;
+                        case 'row-height': //行高
+                            let rowsNum = _this.currentCells.c2[2] - _this.currentCells.c1[2] + 1;
+                            for (let i = 0; i < rowsNum; i++) {
+                                let height = _this.currentGrid.rows.elementArray[_this.currentCells.c1[2]].height;
+                                _this.currentGrid.rows.elementArray[_this.currentCells.c1[2] + i].height = height;
+                                _this.currentJexcl.setHeight(_this.currentCells.c1[2] + i, height);
+                            }
+                            break;
+                    }
+                },
+                //切换单元格数值类型
+                _changeCellDataDataType(e){
+                    this.currentCellsElement.forEach(function (cell){
+                        cell.cellEle.display.format.formatString = e.target.innerHTML; 
+                    });
+                },
+                //切换数值来源清空默认值
+                _changeSoureType(){
+                    this.currentCellsElement.forEach(function (cell){
+                        cell.cellEle.tableKey =
+                            cell.cellEle.fieldKey =
+                                cell.cellEle.formula =
+                                    cell.cellEle.impl =
+                                        cell.cellEle.pageNo =
+                                            cell.cellEle.systemContent = '';
+                    });
+                },
+                //单元格数值 列表项事件
+                _cellDataDataListEvent(event){
+                    let _this = this;
+                    _this.currentCellsElement.forEach(function (cell){
+                        switch (event) {
+                            case 'add':
+                                cell.cellEle.display.format.listItems.push(JSON.parse(JSON.stringify(_this.pubAllClass.ListItem)));
+                                _this.cellDataCurrentRowIndex = cell.cellEle.display.format.listItems.length-1;
+                                break;
+                            case 'delete':
+                                cell.cellEle.display.format.listItems.splice(_this.cellDataCurrentRowIndex, 1);
+                                _this.cellDataCurrentRowIndex--;
+                                break;
+                            case 'goUp':
+                                if(_this.cellDataCurrentRowIndex==0){
+                                    alert("已经是第一行啦！");
+                                    return false
+                                }
+                                let item1 = cell.cellEle.display.format.listItems.splice(_this.cellDataCurrentRowIndex, 1);
+                                cell.cellEle.display.format.listItems.splice(_this.cellDataCurrentRowIndex-1, 0, item1[0]);
+                                _this.cellDataCurrentRowIndex--;
+                                break;
+                            case 'goDown':
+                                if(_this.cellDataCurrentRowIndex==cell.cellEle.display.format.listItems.length-1){
+                                    alert("已经是最后一行啦！");
+                                    return false
+                                }
+                                let item2 = cell.cellEle.display.format.listItems.splice(_this.cellDataCurrentRowIndex, 1);
+                                cell.cellEle.display.format.listItems.splice(_this.cellDataCurrentRowIndex+1, 0, item2[0]);
+                                _this.cellDataCurrentRowIndex++;
+                                break;
+                        }
+                    });
+                },
+                //获取单元格数值列表项 当前行号(用于删除与移动)
+                _getCurrentRowIndex(index){
+                    this.cellDataCurrentRowIndex = index;
+                },
+                //切换段类型
+                _changeGridType(){
+                    let currentGridIndex = this.reportData.grid.elementArray.indexOf(this.currentGrid); //获得当前grid的索引
+                    $('.report-container .report-item-'+currentGridIndex+' h2').html(gridType[this.currentGrid.type]);
+                }
+            },
+            mounted() {
+                this._getReportData();
+            }
+        })
+
+    })()
+</script>
+<script type="text/javascript">
+    $(function () {
+        //layout
+        let _initPaperSize = function () {
+            let $window = $(window),
+                $reportContainer = $(".report-container"),
+                $rightpanel = $(".report-rightpanel"),
+                windowHeight = $window.innerHeight();
+            $rightpanel.find('.tabContent').height(windowHeight - $(".report-toolbar").outerHeight() - $rightpanel.find(".report-baseAttr").outerHeight()-100);
+            $reportContainer.height(windowHeight - $(".report-toolbar").outerHeight() - 60).width($window.innerWidth() - $rightpanel.outerWidth() - 60);
+        };
+        $(window).resize(function () {
+            _initPaperSize();
+        }).resize();
+    });
+</script>
+</body>
+</html>
